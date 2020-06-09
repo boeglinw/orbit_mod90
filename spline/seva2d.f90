@@ -44,7 +44,7 @@ subroutine seva2d (bkx, lx, bky, ly, cs, nx, ny, xl, yl, fs, ier, &
 !
 !-----------------------------------------------------------------------
 
-  use orbit_parameters
+  use orbit_parameters_mod
 
 implicit real (8)(a - h, o - z)  
 save  

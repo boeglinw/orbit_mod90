@@ -11,7 +11,7 @@ subroutine spl2bc (rgrid, zgrid, mw, mh, rknot, zknot, copy)
 !**********************************************************************
 ! calculates the b-spline coeficients
 
-use orbit_parameters
+use orbit_parameters_mod
 
 implicit real (8)(a - h, o - z)  
 save  

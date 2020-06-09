@@ -12,7 +12,7 @@ subroutine spl2pp (mw, mh, rknot, zknot, copy, breakr, lr, breakz, &
 ! translates to pp representation
 
 
-use orbit_parameters
+use orbit_parameters_mod
 
 implicit real (8)(a - h, o - z)  
 save
