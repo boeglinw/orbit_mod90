@@ -38,6 +38,6 @@ orbit_detectors_mod.o: orbit_detectors_mod.f90
 	$(F90) $(FFLAGS) -c $<
     
 clean:
-	rm -f $(MODOBJ) $(THIS_LIB)
+	rm -f $(MODOBJ) $(THIS_LIB) *.mod
 
 

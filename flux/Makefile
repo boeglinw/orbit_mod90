@@ -49,7 +49,7 @@ $(THIS_LIB): $(MODOBJ)
 .PHONY : clean
 
 clean:
-	rm -f *.o *.a
+	rm -f *.o *.a *.mod test_bfield test_zlim
 
 
 

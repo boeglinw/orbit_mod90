@@ -7,17 +7,13 @@ SPLINE     = ./spline/
 FLUX       = ./flux/
 RDEQDSK    = ./read_eqdsk/
 BORIS      = ./boris_pusher/
+LIMITER      = ./limiter/
 PYTHON      = ./python/
 
 
-FLIBS	= -L$(SPLINE) -L$(RDEQDSK) -L$(ORBLIM) -L$(PLOTMED205) \
-          -L$(ORBIT205) -L$(RDPAR) -L$(BSODE) -L$(UTIL)\
-          -lorbit205 -lplotmed205 \
-          -lorblim -lrdeqdsk -lspline -lbsode -lrdpar -lw
-
 #----------------------------------------------------------
 # targets need to be a different names that directory names
-ALL:  include_mod spline_mod flux_mod  read_eqdsk_mod boris python_modules
+ALL:  include_mod spline_mod flux_mod  read_eqdsk_mod limiter_module boris  python_modules
 
 include_mod:
 	cd $(INCLUDE) ; make all
@@ -31,8 +27,13 @@ flux_mod:
 read_eqdsk_mod:
 	cd $(RDEQDSK); make all
 
+limiter_module:
+	cd $(LIMITER); make all
+
 boris:
 	cd $(BORIS); make all
+
+
 
 python_modules:
 	cd $(FLUX); make -f flux.mak
@@ -42,7 +43,7 @@ python_modules:
 
 #----------------------------------------------------------
 
-clean: clean_include clean_spline clean_flux clean_read_eqdsk clean_boris clean_python
+clean: clean_include clean_spline clean_flux clean_read_eqdsk clean_boris clean_limiter clean_python
 
 clean_include:
 	cd $(INCLUDE); make clean
@@ -58,6 +59,9 @@ clean_read_eqdsk:
 
 clean_boris:
 	cd $(BORIS); make clean; make -f BTpy.mak clean
+
+clean_limiter:
+	cd $(LIMITER); make clean
 
 clean_python:
 	cd $(PYTHON); rm *.so

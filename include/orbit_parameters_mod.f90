@@ -89,6 +89,7 @@ module orbit_parameters_mod
       ! constants
       real(kind = 8), parameter :: pi  = 3.1415926535897932d0
       real(kind = 8), parameter :: twopi=2.0*pi
+      real(kind = 8), parameter :: dtr = pi/180.
 
       ! conversion factor for magnetic moment
       real(kind = 8), parameter :: tmu = 2.0e-07

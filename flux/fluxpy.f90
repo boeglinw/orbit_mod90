@@ -8,5 +8,7 @@ module flux
 contains
   include 'get_flux.f90'
   include 'bfield.f90'
+  include 'is_inside.f90'
+  include 'zlim.f90'
 end module flux
 

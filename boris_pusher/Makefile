@@ -3,13 +3,14 @@
 # modules
 MODOBJ = boris_mod.o BT.o
 
-INCLUDE = ../include/ -I../flux/
-
 FLUX       = ../flux/
 SPLINE     = ../spline/
 RDEQDSK    = ../read_eqdsk/
 MODULES    = ../include/
+LIMITER    = ../limiter/
 BORIS    = ../boris_pusher/
+
+INCLUDE = $(MODULES) -I $(FLUX) -I $(LIMITER)
 
 F90     = gfortran
 
@@ -20,10 +21,7 @@ F90     = gfortran
 FFLAGS  = -ffixed-line-length-none $(FDFLAG) \
           -w -fno-automatic -I$(INCLUDE)
 
-
-
 THIS_LIB = libboris.a
-
 
 #----------------------------------------------------------
 all: $(MODOBJ) $(THIS_LIB)
@@ -31,15 +29,8 @@ all: $(MODOBJ) $(THIS_LIB)
 %.o: %.f90
 	$(F90) $(FFLAGS) -c $<
 
-
-test_boris: test_boris.o $(MODOBJ)
-	$(F90)  -L$(MODULES) -lmodules -L$(BORIS) -lboris -L$(FLUX) -lflux -L$(SPLINE) -lspline -L$(RDEQDSK) -lread_eqdsk  -L$(BORIS) -lboris test_boris.o -o test_boris
-
-test_boris_c: test_boris_c.o $(MODOBJ)
-	$(F90)  -L$(MODULES) -lmodules -L$(BORIS) -lboris -L$(FLUX) -lflux -L$(SPLINE) -lspline -L$(RDEQDSK) -lread_eqdsk  -L$(BORIS) -lboris test_boris_c.o -o test_boris_c
-
 test_BT: test_BT.o $(MODOBJ)
-	$(F90)  -L$(MODULES) -lmodules -L$(BORIS) -lboris -L$(FLUX) -lflux -L$(SPLINE) -lspline -L$(RDEQDSK) -lread_eqdsk  -L$(BORIS) -lboris test_BT.o -o test_BT
+	$(F90)  -L$(MODULES) -lmodules -L$(BORIS) -lboris -L$(FLUX) -lflux -L$(SPLINE) -lspline -L$(RDEQDSK) -lread_eqdsk  -L$(BORIS) -lboris -L$(LIMITER) -llimiter test_BT.o -o test_BT
 
 
 $(THIS_LIB): $(MODOBJ)
@@ -52,7 +43,7 @@ $(THIS_LIB): $(MODOBJ)
 .PHONY : clean
 
 clean:
-	rm -f *.o *.a *.mod
+	rm -f *.o *.a *.mod test_BT
 
 
 

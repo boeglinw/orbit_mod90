@@ -1,6 +1,7 @@
 ! test boris with uniform field in z-direction
 module Tracker
   use boris_mod
+
   implicit none
   real(kind = 8) :: particle_charge = 1.               ! particle charge in units of e
   real(kind = 8) :: particle_mass_amu  = mp/mamu       ! particle mass in amu default proton
@@ -55,15 +56,15 @@ contains
 
   subroutine set_gfile_name(gfile_name)
     implicit none
-    character(len = 132), intent(in) :: gfile_name
+    character(len = *), intent(in) :: gfile_name
      efit_gfile_name = gfile_name
   end subroutine set_gfile_name
 
-  subroutine set_directory(directory)
+  subroutine set_efit_directory(directory)
     implicit none
-    character(len = 132), intent(in) :: directory
+    character(len = *), intent(in) :: directory
     efit_directory = directory
-  end subroutine set_directory
+  end subroutine set_efit_directory
   
   subroutine init_BT()
 
@@ -104,26 +105,25 @@ contains
     return
   end subroutine reset_BT
   
-  function get_trajectory(r0, v0) result(ier)
+  function get_trajectory(r0, v0) result(n_calc)
     implicit none
     real(kind = 8), dimension(3) :: r0  ! initial position vector    
     real(kind = 8), dimension(3) :: v0  ! initial velocity vector
-    integer(kind = 4) :: ier
+    integer(kind = 4) :: n_calc
         
     integer(kind = 4) :: i, j
 
-    ier = 0
+    n_calc = 0
     if (.not. flux_ok) then
        print*, ' Flux not OK, cannot calculate B-field !'
-       ier = -1
+       n_calc = -1
        return
     endif
     if (allocated (trajectory) ) then
-       call b_push( r0, v0, time_step, Nsteps, bfield3, efield, trajectory)
-       ier = 0
+       n_calc = b_push( r0, v0, time_step, nsteps, bfield3, efield, trajectory)
     else
        print *, 'trajectory not allocated cannot continue !'
-       ier = -2
+       n_calc = -2
     endif
     return
   end function get_trajectory

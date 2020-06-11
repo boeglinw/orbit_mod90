@@ -10,15 +10,16 @@ FLUX       = ../flux/
 SPLINE     = ../spline/
 RDEQDSK    = ../read_eqdsk/
 MODULES    = ../include/
+LIMITER    = ../limiter/
 
 F2PY     = f2py
 
-F2PY_F1   = --include-path $(INCLUDE):$(FLUX) --overwrite-signature -m 
-F2PY_F2   = -c --fcompiler=gfortran --f90flags="-ffixed-line-length-none -w -fno-automatic -I../include/ -I../flux/"
+F2PY_F1   = --include-path $(INCLUDE):$(FLUX):$(LIMITER) --overwrite-signature -m 
+F2PY_F2   = -c --fcompiler=gfortran --f90flags="-ffixed-line-length-none -w -fno-automatic -I../include/ -I../flux/ -I../limiter/"
 
 PROGRAM = BTpy
 
-LIBS = -L$(INCLUDE) -lmodules  -L$(FLUX) -lflux -L$(SPLINE) -lspline -L$(RDEQDSK) -lread_eqdsk -L$(BORIS) -lboris 
+LIBS = -L$(INCLUDE) -lmodules  -L$(FLUX) -lflux -L$(SPLINE) -lspline -L$(RDEQDSK) -lread_eqdsk -L$(BORIS) -lboris -L$(LIMITER) -llimiter 
 
 #----------------------------------------------------------
 all: $(OBJ)

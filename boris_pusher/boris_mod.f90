@@ -1,4 +1,5 @@
 module boris_mod
+  use limiter_mod
   ! boris tracker module
   ! this contains the b_push routine that advances the position and velocities for the
   ! requested number of steps
@@ -11,14 +12,14 @@ module boris_mod
   real(kind = 8), parameter :: mamu = 1.66053892173e-27
   real(kind = 8), parameter :: ec = 1.60217662e-19
   real(kind = 8), parameter :: em_ratio = ec/me  ! em ratio in Kg/C
-  real(kind = 8), parameter :: pi = 3.141592653589793
-  real(kind = 8), parameter :: dtr = pi/180.
   real(kind = 8), parameter :: mev = ec*1.e6   ! MeV in J
   
   real(kind = 8) :: q  = 1.
   real(kind = 8) :: m = 1836.152
   real(kind = 8) :: q_over_m
-  logical :: initialized = .false. 
+  logical :: boris_initialized = .false.
+
+  logical :: check_limiter = .false.
 
 contains 
 
@@ -30,6 +31,16 @@ contains
     cp(2) = a(3) * b(1) - a(1) * b(3)
     cp(3) = a(1) * b(2) - a(2) * b(1)
   end function cross_product
+
+  function pol_angle(rv) result(angle)
+    ! calculate the polar angle for a 2d vector rv. The angle is between 0 and 2 pi
+    real(kind = 8), dimension(2), intent(in) :: rv
+    real(kind = 8) :: angle
+
+    angle = mod(atan2(rv(2), rv(1) ) + twopi, twopi)
+    return
+  end function pol_angle
+
   
   function vect_mag(v) result(v_mag)
     real*8, dimension(:), intent(in) ::v
@@ -37,6 +48,43 @@ contains
     v_mag = sqrt(dot_product(v,v))
   end function vect_mag
 
+  ! limiter initialization routines
+  subroutine set_limiter_file_name(file_name)
+    implicit none
+    character(len = *), intent(in) :: file_name
+     limiter_filename = file_name
+  end subroutine set_limiter_file_name
+
+  subroutine set_limiter_directory(directory)
+    implicit none
+    character(len = *), intent(in) :: directory
+    limiter_directory = directory
+  end subroutine set_limiter_directory
+  
+
+  subroutine limiter_init
+    ! wrapping function for init_limiter
+    call init_limiter
+    return
+  end subroutine limiter_init
+
+  function hit_lim(r) result(hit)
+    real(kind = 8), dimension(3), intent(in) :: r
+    logical :: hit
+    real(kind = 8) :: rt, zt, phit
+    
+    ! convert to toroidal coordinates
+    rt = sqrt(r(1)**2 + r(2)**2)
+    zt = r(3)
+    phit = pol_angle(r(1:2))
+
+    hit = limiter_hit(rt, zt, phit)
+    if (hit) then
+       print *, '--- limiter hit at r,z,phi = ', rt, zt, phit/dtr
+    endif
+    return
+  end function hit_lim
+  
   subroutine boris_init( qv,  mv )
 
     ! exmple : call init(1., 1836.152) 
@@ -48,12 +96,14 @@ contains
     q = qv
     m = mv
     q_over_m = q/m*em_ratio
-    initialized = .true.
+    boris_initialized = .true.
     print *, 'initialized boris with q = ', q, '(e) and m = ', m, ' (me),  ' , q_over_m, 'q/m ' 
     return
   end subroutine boris_init
   
-  subroutine b_push( rs, vs, dt, nsteps, bfield, efield, track)  
+  function b_push( rs, vs, dt, nsteps, bfield, efield, track) result(n_calc)
+    ! calculates trajectory and returns the actual number of steps calculated, this should
+    ! be smaller than nsteps if a limiter is hit and check_limiter is set to .true.
     ! interfaces
     interface
        function Bfield(x) result(bf)
@@ -74,7 +124,8 @@ contains
     ! time step
     real(kind = 8) dt
     ! total number of steps
-    integer(kind = 4) Nsteps
+    integer(kind = 4), intent(in) ::  Nsteps
+    integer(kind = 4) :: n_calc ! calculated steps
     ! track data
     real(kind = 8), dimension(nsteps,6), intent(out) :: track
     
@@ -107,10 +158,17 @@ contains
           track(i,j) = r0(j)
           track(i,j+3) = v0(j)
        enddo
+       if (check_limiter) then   ! if selected check a limiter hit
+          if (hit_lim(r1)) then
+             n_calc = i          ! adjust the total number of steps calculated
+             return              ! if a limiter is hit return
+          endif
+       endif
        r0 = r1
        v0 = v1
     enddo
-  end subroutine b_push
+    n_calc = i
+  end function b_push
   
 end module boris_mod
 

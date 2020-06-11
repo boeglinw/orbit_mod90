@@ -45,5 +45,6 @@ $(THIS_LIB): $(RDEQDSK_OBJ)
 clean:
 	rm -f $(RDEQDSK_OBJ)
 	rm -f $(THIS_LIB)
+	rm *.mod
 
 

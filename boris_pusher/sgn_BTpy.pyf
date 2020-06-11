@@ -72,6 +72,7 @@ python module BTpy ! in
             integer(kind=4), parameter,optional :: neqdsk=38
             real(kind=8), parameter,optional :: pi=3.1415926535897932d0
             real(kind=8), parameter,optional,depend(pi) :: twopi=6.283185307179586
+            real(kind=8), parameter,optional,depend(pi) :: dtr=0.017453292519943295
             real(kind=8), parameter,optional :: tmu=2e-07
             real(kind=8) :: xxxxxx
         end module orbit_parameters_mod
@@ -124,6 +125,7 @@ python module BTpy ! in
             real(kind=8) dimension(300) :: fpol
         end module flux_par_mod
         module boris_mod ! in :BTpy:boris_mod.f90
+            use limiter_mod
             real(kind=8), parameter,optional :: me=9.10938356e-31
             real(kind=8), parameter,optional :: mp=1.6726219e-27
             real(kind=8), parameter,optional :: mn=1.674927471e-27
@@ -131,34 +133,50 @@ python module BTpy ! in
             real(kind=8), parameter,optional :: mamu=1.66053892173e-27
             real(kind=8), parameter,optional :: ec=1.60217662e-19
             real(kind=8), parameter,optional,depend(me,ec) :: em_ratio=175882002272.39087
-            real(kind=8), parameter,optional :: pi=3.141592653589793
-            real(kind=8), parameter,optional,depend(pi) :: dtr=0.017453292519943295
             real(kind=8), parameter,optional,depend(ec) :: mev=1.60217662e-13
             real(kind=8), optional :: q=1.0
             real(kind=8), optional :: m=1836.152
             real(kind=8) :: q_over_m
-            logical, optional :: initialized=.false.
+            logical, optional :: boris_initialized=.false.
+            logical, optional :: check_limiter=.false.
             function cross_product(a,b) result (cp) ! in :BTpy:boris_mod.f90:boris_mod
                 real(kind=8) dimension(3),intent(in) :: a
                 real(kind=8) dimension(3),intent(in) :: b
                 real(kind=8) dimension(3) :: cp
             end function cross_product
+            function pol_angle(rv) result (angle) ! in :BTpy:boris_mod.f90:boris_mod
+                real(kind=8) dimension(2),intent(in) :: rv
+                real(kind=8) :: angle
+            end function pol_angle
             function vect_mag(v) result (v_mag) ! in :BTpy:boris_mod.f90:boris_mod
                 real*8 dimension(:),intent(in) :: v
                 real*8 :: v_mag
             end function vect_mag
+            subroutine set_limiter_file_name(file_name) ! in :BTpy:boris_mod.f90:boris_mod
+                character*(*) intent(in) :: file_name
+            end subroutine set_limiter_file_name
+            subroutine set_limiter_directory(directory) ! in :BTpy:boris_mod.f90:boris_mod
+                character*(*) intent(in) :: directory
+            end subroutine set_limiter_directory
+            subroutine limiter_init ! in :BTpy:boris_mod.f90:boris_mod
+            end subroutine limiter_init
+            function hit_lim(r) result (hit) ! in :BTpy:boris_mod.f90:boris_mod
+                real(kind=8) dimension(3),intent(in) :: r
+                logical :: hit
+            end function hit_lim
             subroutine boris_init(qv,mv) ! in :BTpy:boris_mod.f90:boris_mod
                 real(kind=8) intent(in) :: qv
                 real(kind=8) intent(in) :: mv
             end subroutine boris_init
-            subroutine b_push(rs,vs,dt,nsteps,bfield,efield,track) ! in :BTpy:boris_mod.f90:boris_mod
+            function b_push(rs,vs,dt,nsteps,bfield,efield,track) result (n_calc) ! in :BTpy:boris_mod.f90:boris_mod
                 real(kind=8) dimension(3),intent(in) :: rs
                 real(kind=8) dimension(3),intent(in) :: vs
                 real(kind=8) :: dt
-                integer(kind=4) :: nsteps
+                integer(kind=4) intent(in) :: nsteps
                 external bfield
                 external efield
                 real(kind=8) dimension(nsteps,6),intent(out),depend(nsteps) :: track
+                integer(kind=4) :: n_calc
                 interface  ! in :BTpy:boris_mod.f90:boris_mod:b_push
                     function bfield(x) result (bf) ! in :BTpy:boris_mod.f90:boris_mod:b_push:unknown_interface
                         real(kind=8) dimension(3),intent(in) :: x
@@ -169,7 +187,7 @@ python module BTpy ! in
                         real(kind=8) dimension(3) :: ef
                     end function efield
                 end interface 
-            end subroutine b_push
+            end function b_push
         end module boris_mod
         module tracker ! in :BTpy:BT.f90
             use boris_mod
@@ -192,19 +210,19 @@ python module BTpy ! in
             subroutine load_flux ! in :BTpy:BT.f90:tracker
             end subroutine load_flux
             subroutine set_gfile_name(gfile_name) ! in :BTpy:BT.f90:tracker
-                character*132 intent(in) :: gfile_name
+                character*(*) intent(in) :: gfile_name
             end subroutine set_gfile_name
-            subroutine set_directory(directory) ! in :BTpy:BT.f90:tracker
-                character*132 intent(in) :: directory
-            end subroutine set_directory
+            subroutine set_efit_directory(directory) ! in :BTpy:BT.f90:tracker
+                character*(*) intent(in) :: directory
+            end subroutine set_efit_directory
             subroutine init_bt ! in :BTpy:BT.f90:tracker
             end subroutine init_bt
             subroutine reset_bt ! in :BTpy:BT.f90:tracker
             end subroutine reset_bt
-            function get_trajectory(r0,v0) result (ier) ! in :BTpy:BT.f90:tracker
+            function get_trajectory(r0,v0) result (n_calc) ! in :BTpy:BT.f90:tracker
                 real(kind=8) dimension(3) :: r0
                 real(kind=8) dimension(3) :: v0
-                integer(kind=4) :: ier
+                integer(kind=4) :: n_calc
             end function get_trajectory
             function bfield3(r) result (b) ! in :BTpy:BT.f90:tracker
                 use boris_mod
