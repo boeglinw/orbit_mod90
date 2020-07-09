@@ -1,7 +1,7 @@
 #------Makefile for modules and the flux library ----------
 
 # modules
-MODOBJ = flux_par_mod.o bfield.o zlim.o get_flux.o is_inside.o
+MODOBJ = flux_par_mod.o em_fields_mod.o bfield.o checklim.o get_flux.o is_inside.o
 
 INCLUDE = ../include/ -I../flux/
 
@@ -35,8 +35,8 @@ test_bfield: test_bfield.o $(MODOBJ)
 	$(F90)  -L$(MODULES) -lmodules -L$(FLUX) -lflux -L$(SPLINE) -lspline -L$(RDEQDSK) -lread_eqdsk  test_bfield.o -o test_bfield
 
 
-test_zlim: test_zlim.o $(MODOBJ)
-	$(F90)  -L$(MODULES) -lmodules -L$(FLUX) -lflux -L$(SPLINE) -lspline -L$(RDEQDSK) -lread_eqdsk  test_zlim.o -o test_zlim
+test_checklim: test_checklim.o $(MODOBJ)
+	$(F90)  -L$(MODULES) -lmodules -L$(FLUX) -lflux -L$(SPLINE) -lspline -L$(RDEQDSK) -lread_eqdsk  test_checklim.o -o test_checklim
 
 
 $(THIS_LIB): $(MODOBJ)

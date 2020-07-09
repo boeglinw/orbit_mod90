@@ -3,7 +3,7 @@
 # modules
 
 
-MODOBJ = orbit_parameters_mod.o orbit_detectors_mod.o position_mod.o 
+MODOBJ = orbit_parameters_mod.o orbit_detectors_mod.o  constants_and_masses_mod.o helper_functions_mod.o control_mod.o
 
 INCLUDE = ../include/ -I../flux/
 

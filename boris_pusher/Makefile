@@ -1,7 +1,7 @@
 #------Makefile for modules and the flux library ----------
 
 # modules
-MODOBJ = boris_mod.o BT.o
+MODOBJ = boris_mod.o
 
 FLUX       = ../flux/
 SPLINE     = ../spline/
@@ -29,10 +29,6 @@ all: $(MODOBJ) $(THIS_LIB)
 %.o: %.f90
 	$(F90) $(FFLAGS) -c $<
 
-test_BT: test_BT.o $(MODOBJ)
-	$(F90)  -L$(MODULES) -lmodules -L$(BORIS) -lboris -L$(FLUX) -lflux -L$(SPLINE) -lspline -L$(RDEQDSK) -lread_eqdsk  -L$(BORIS) -lboris -L$(LIMITER) -llimiter test_BT.o -o test_BT
-
-
 $(THIS_LIB): $(MODOBJ)
 	ar rv $(THIS_LIB) $(MODOBJ)
 	ranlib $(THIS_LIB)
@@ -43,7 +39,7 @@ $(THIS_LIB): $(MODOBJ)
 .PHONY : clean
 
 clean:
-	rm -f *.o *.a *.mod test_BT
+	rm -f *.o *.a *.mod
 
 
 

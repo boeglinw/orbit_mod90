@@ -43,8 +43,6 @@ $(THIS_LIB): $(RDEQDSK_OBJ)
 .PHONY : clean
 
 clean:
-	rm -f $(RDEQDSK_OBJ)
-	rm -f $(THIS_LIB)
-	rm *.mod
+	rm -f *.o *.a *.mod
 
 

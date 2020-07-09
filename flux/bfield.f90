@@ -45,6 +45,7 @@ function bfield (r_loc, z_loc)  result(bf)
   
   ! interpolation function
   real(kind = 8):: seval
+  ! real(kind = 8):: spline_eval
   
   ! local variables
   logical:: debug = .false.
@@ -96,6 +97,7 @@ function bfield (r_loc, z_loc)  result(bf)
      ! bkx, lkx, bky, lky, c,  are interpolation parameters
      ! mw, mh the total grid size
      call seva2d (bkx, lkx, bky, lky, c, mw, mh, r_loc, z_loc, pds, ier, n333)
+     ! call spline_eval_2d (bkx, lkx, bky, lky, c, mw, mh, r_loc, z_loc, pds, ier, n333)
   endif
 
   ! flux
@@ -133,6 +135,7 @@ function bfield (r_loc, z_loc)  result(bf)
      if ( in_closed_flux_surface .and. (xsinow .le. 1.) ) then  
         !     take this branch if inside limiter and psi small enough i.e. inside plasma boundary
         fpnow = seval(mwfpol, xsinow, xxxsi, fpol, bfpol, cfpol, dfpol)
+        ! fpnow = spline_eval(mwfpol, xsinow, xxxsi, fpol, bfpol, cfpol, dfpol)
      else  
         fpnow = fpol (mwfpol)  
      endif

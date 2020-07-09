@@ -1,6 +1,11 @@
 module limiter_mod
   use orbit_parameters_mod
+  use constants_and_masses_mod
+  use helper_functions_mod
+  use control_mod
+
   implicit none
+
   
   !    ntorreg number of toroidal regions (ie intervals in phi, the toroidal
   !       angle).  must be .le. ntorrmx
@@ -51,6 +56,8 @@ module limiter_mod
   
 contains
 
+
+  
   function locate (z, zlist, nz) result(pos)
 
     !  This function searches through a list of z values (assumed
@@ -402,5 +409,39 @@ contains
     
   end function limiter_hit
 
+
+  function hit_lim(r) result(hit)
+    real(kind = 8), dimension(3), intent(in) :: r
+    logical :: hit
+    real(kind = 8) :: rt, zt, phit
+    
+    ! convert to toroidal coordinates
+    rt = sqrt(r(1)**2 + r(2)**2)
+    zt = r(3)
+    phit = pol_angle(r(1:2))
+
+    hit = limiter_hit(rt, zt, phit)
+    if (hit .and. print_hit ) then
+       print *, '----------------------------------------------------------------------'
+       print *, '--- limiter hit at r,z,phi = ', rt, zt, phit/dtr
+       print *, '----------------------------------------------------------------------'
+    endif
+    return
+  end function hit_lim
+  
+  function hit_lim_tor(r) result(hit)
+    ! assuming r: r(1) = r, r(2) = phi, r(3) = z
+    real(kind = 8), dimension(3), intent(in) :: r
+    logical :: hit
+
+    hit = limiter_hit(r(1), r(3), r(2))
+    if (hit .and. print_hit ) then
+       print *, '----------------------------------------------------------------------'
+       print *, '--- limiter hit at r,z,phi = ', r(1), r(3), r(2)/dtr
+       print *, '----------------------------------------------------------------------'
+    endif
+    return
+  end function hit_lim_tor
+  
 end module limiter_mod
 

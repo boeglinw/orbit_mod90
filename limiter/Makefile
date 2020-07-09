@@ -1,7 +1,7 @@
 #------Makefile for modules and the flux library ----------
 
 # modules
-MODOBJ = limiter_mod.o
+MODOBJ = limiter_mod.o limiter_control_mod.o
 
 INCLUDE = ../include/ -I../flux/
 

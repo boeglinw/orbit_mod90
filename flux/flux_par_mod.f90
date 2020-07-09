@@ -14,32 +14,14 @@ module flux_par_mod
   real(kind = 8):: psibry
   real(kind = 8):: simag
   real(kind = 8):: sidif
-  real(kind = 8):: eouter
 
-!-------------------------------------------------------------------------------------
-! not used at the moment  
-!  common/ccase/case(6)
-!  common/cerror/delerr
-!  common/mw1com/mw1,mh1
-  
-!  common/consta/pi,tmu,twopi,ioption,ipress,idolim,isurf
-!  common/cpitch/ipitch,tanbn(npitch),angbn(npitch),sisibn(npitch)
-  
-!  common/input1/icondn,itek,kdata,ico2,itrace,ierchk,iconvr,ixray
-!  common/limite/limitr,xlim(nlimit),ylim(nlimit)
-
-  !  common/vtor/presw(nw),preswp(nw),kvtor,rvtor,cwrmid(nw)
-!  .            ,prw(nw),wpsi(nwnh),presst(nwnh),pressw(nwnh)
-
-  ! previous common cffol
-!-------------------------------------------------------------------------------------
 
   ! equilirbium data
   real(kind = 8), dimension(nw)::qpsi
   real(kind = 8), dimension(nw)::bfpol
   real(kind = 8), dimension(nw)::cfpol
   real(kind = 8), dimension(nw)::dfpol(nw)
-  integer(kind = 4) :: mwfpol
+  integer(kind = 4) :: mwfpol               ! set in read_eqdesk
   real(kind = 8), dimension(mbdry):: rbdry
   real(kind = 8), dimension(mbdry):: zbdry
   integer(kind = 4):: nbdry

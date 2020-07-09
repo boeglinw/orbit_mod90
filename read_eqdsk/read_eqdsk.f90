@@ -21,7 +21,7 @@ subroutine read_eqdsk(fname,imfit,ier)
   !**********************************************************************
   
   use orbit_parameters_mod
-  
+  use constants_and_masses_mod
   use flux_par_mod
   
   implicit none
@@ -292,13 +292,16 @@ subroutine read_eqdsk(fname,imfit,ier)
   !    setup 2-d zpline for psi 
   !----------------------------------------------------------------------
   call sets2d(psi,c,rgrid,mw,bkx,lkx,zgrid,mh,bky,lky,wk,ier)
+  !call set_spline_2d(psi,c,rgrid,mw,bkx,lkx,zgrid,mh,bky,lky,wk,ier)
 
   !----------------------------------------------------------------------
   !   setup zpline for poliodal current function F
   !----------------------------------------------------------------------
   
   mwfpol=mw
+  
   call zpline(mwfpol,xxxsi,fpol,bfpol,cfpol,dfpol)
+  !call spline_coeff(mwfpol,xxxsi,fpol,bfpol,cfpol,dfpol)
 
   print *, '----------------------------------------------------------------------'
   print *, ' All DONE !'

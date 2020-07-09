@@ -1,10 +1,9 @@
-program test_zlim
+program test_ckecklim
 
-  use orbit_parameters
-  use flux_module
-  use position_module
+  use orbit_parameters_mod
+  use flux_par_mod
   
-  ! test that flux is read correctly and that zlim works
+  ! test that flux is read correctly and that check_lim works
   implicit none
   
 
@@ -30,7 +29,7 @@ program test_zlim
    
   
   ! test zlim over the entire flux grid
-  call zlim (nw, nh, rgrid, zgrid, nbdry, rbdry, zbdry, is_inside)
+  call check_lim (nw, nh, rgrid, zgrid, nbdry, rbdry, zbdry, is_inside)
 
   ! write results
   open(16, file = 'test_flux.data', status = 'unknown')
@@ -45,5 +44,5 @@ program test_zlim
   enddo
   close(16)
   
-end program test_zlim
+end program test_checklim
 
