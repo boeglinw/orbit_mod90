@@ -11,3 +11,4 @@ In the directory *example_data* are data examples and python scripts to explore 
 This includes the shared library Trpy.so (after the make) and a few example python scripts. In various directories are also fortan90 example codes to test the
 different libraries. All has been compiled with gfortran (GNU Fortran (GCC) 8.2.0) and f2py (Version: 2, numpy Version: 1.18.1)
 
+
