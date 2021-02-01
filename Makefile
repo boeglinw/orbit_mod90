@@ -46,6 +46,8 @@ tracker_module:
 python_modules:
 	cd $(FLUX); make -f flux.mak
 	cd $(TRACKER); make -f Trpy.mak
+	cd $(BORIS); make -f BorisCylpy.mak
+	cp $(BORIS)/*.so $(PYTHON)/.
 	cp $(FLUX)/*.so $(PYTHON)/.
 	cp $(TRACKER)/*.so $(PYTHON)/.
 
@@ -66,7 +68,7 @@ clean_read_eqdsk:
 	cd $(RDEQDSK); make clean
 
 clean_boris:
-	cd $(BORIS); make clean; 
+	cd $(BORIS); make clean;  make -f BorisCylpy.mak clean
 
 clean_limiter:
 	cd $(LIMITER); make clean
@@ -78,4 +80,4 @@ clean_tracker:
 	cd $(TRACKER); make clean
 
 clean_python:
-	cd $(PYTHON); rm *.so
+	cd $(PYTHON); rm *.so *.npz

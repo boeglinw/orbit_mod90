@@ -1,4 +1,4 @@
-# limiter data for MAST
+comment
 3                                      ! number of  toroidal region
 MAST
 0.0                                    ! start of region
@@ -164,4 +164,7 @@ MAST
 	1.74575	-0.452
 	1.74575	-0.262
 	1.55425	-0.262
-# end of data
+;				Below is info on how to display limiter in plot
+ 2				; # limiter profiles to plot
+ 1     0			;1st profile is toroidal segment 1, linetype 0
+ 4     3			;2nd profile: toroidal seg 4 (HHFW ant) dashed

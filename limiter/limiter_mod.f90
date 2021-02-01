@@ -132,14 +132,17 @@ contains
 
     integer(kind = 4) :: i
 
-    print *,'---------------------------------------------------------------'
-    print *,'comment = ', c
-    print *, 'polygon number of vertices = ', p%nv
-    do i = 1, p%nv
-       print*, 'polygon point ', i, ' x = ', p%x(i), ',  y = ', p%y(i)
-    enddo
-    print *,'---------------------------------------------------------------'
-
+    ! print only if print_polygon is set
+    
+    if (print_polygon) then
+       print *,'---------------------------------------------------------------'
+       print *,'comment = ', c
+       print *, 'polygon number of vertices = ', p%nv
+       do i = 1, p%nv
+          print*, 'polygon point ', i, ' x = ', p%x(i), ',  y = ', p%y(i)
+       enddo
+       print *,'---------------------------------------------------------------'
+    endif
   end subroutine print_poly
     
     

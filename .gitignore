@@ -18,3 +18,4 @@
 *.so
 *.so.dSYM
 .DS_Store
+__pycache__

@@ -126,7 +126,7 @@ class limiter:
         self.midplanes = midplanes
         self.nregs = nreg
         
-        self.polygons=np.array(polygons)
+        self.polygons=np.array(polygons, dtype=object)
 #        self.l_regions = np.array(l_regions)
 #        self.r_regions = np.array(r_regions)
                       

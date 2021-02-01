@@ -12,6 +12,14 @@ contains
     print_hit = .False.
   end subroutine clear_print_hit
   
+  subroutine set_print_polygon
+    print_polygon = .True.
+  end subroutine set_print_polygon
+
+  subroutine clear_print_polygon
+    print_polygon = .False.
+  end subroutine clear_print_polygon
+  
   ! limiter initialization routines
   subroutine set_limiter_file_name(file_name)
     implicit none

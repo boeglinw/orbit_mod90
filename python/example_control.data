@@ -1,0 +1,70 @@
+# example of control file for calc_orbits.py
+# this is parameter file
+
+# ---- Particle kinematics
+
+# charge in units of e
+particle_charge = 1
+
+# mass in amu
+particle_mass_amu = 1.00727647
+
+# energy in MeV
+particle_energy_mev = 3.
+
+
+# ---- Tracking setup
+# This is a parameters file and should be read using
+#
+# LT.parameterfile.pfile
+#
+
+# ------------- Tracking setup
+# max. track length and step size in m
+track_length = 6.
+step_size = 0.01
+time_reversed = True
+
+# setup number of fibonacci points for the trajectory bundles
+
+# the total number of trajectories =  number_of_fib_points * number_of_fib_directions
+
+number_of_fib_points = 10
+number_of_fib_directions = 50
+
+# fast version
+selected_tracker = Boris
+
+# slower, original version
+# selected_tracker = Bulirsch_stoer
+
+
+# ------------- Equilibrium setup
+
+# equilibrium file information
+efit_directory = ../example_data/
+
+# eqdsk file name (excl. the first g)
+gfile_name = 029880.00234.dat
+
+
+# ------------ Limiter setup
+
+limiter_directory = ../example_data/
+limiter_file_name = MASTLIMIT00.dat
+
+#  if true stop track when it hits the limiter
+check_limiter = True
+
+# print location when limiter is hit by a track
+print_hit = False
+
+# ------------ General detector information
+
+# all angles in degrees
+# all positions in m
+
+# Arm rotation angle
+arm_rotation = 0.
+
+detector_head = detector_head_example.data

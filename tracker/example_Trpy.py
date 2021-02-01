@@ -13,7 +13,7 @@ import Trpy as Tr
 import copy as C
 
 from mpl_toolkits.mplot3d import Axes3D
-
+dtr = np.pi/180.
 
 
 #%%  some helper functions 
@@ -33,6 +33,10 @@ def get_random_point(r):
        outside = (x**2 + y**2 > r)
     return x,y
 
+def get_unitvector(r):
+    u = r/np.sqrt( np.dot(r,r) )
+    return u
+
 #%% setup    
 track_dir = '../example_data/'
 track_name = 'track_21111.data'
@@ -47,16 +51,16 @@ yt = rt*np.sin(phit)
 #%%
 # set initial valuesfor tracker
 Tr.tracker.particle_charge = 1.
-# Tr.tracker.particle_mass_amu = 1.007347  
-Tr.tracker.particle_mass_amu = 1.00   # this is not really accurate
-Tr.tracker.particle_energy_mev = 3.
-Tr.tracker.track_length = 6.
-Tr.tracker.step_size = 0.01
+#Tr.tracker.particle_mass_amu = 1.007347  # proton
+Tr.tracker.particle_mass_amu = 2.01410177811   # deuteron
+Tr.tracker.particle_energy_mev = 0.07  # 70 keV deuteron
+Tr.tracker.track_length = 300.
+Tr.tracker.step_size = 0.005
 Tr.control_mod.time_reversed = True
 
 # Select which tracker to use
 Tr.tracker.selected_tracker = Tr.tracker.bulirsch_stoer_t
-#Tr.tracker.selected_tracker = Tr.tracker.boris_t
+# Tr.tracker.selected_tracker = Tr.tracker.boris_t
 
 # file names should be set using these functions
 Tr.tracker.set_gfile_name('029880.00234.dat')
@@ -69,6 +73,7 @@ Tr.tracker.init_tracker()
 # load flux i.e the magneit field and its interpolations
 Tr.tracker.load_flux()
 
+"""
 # set initial track position
 r0 = np.array([0.29375441571112459,
                1.6341828183759661,    
@@ -78,12 +83,34 @@ r0 = np.array([0.29375441571112459,
 uv0 = np.array([0.47137247366158763,
                 -0.61971211944698446,      
                 0.62750687652382131])
+"""
+# try NB particles moving in the y-direction
+# set initial track position
+r0 = np.array([1.25,
+               0.,    
+               0.])
+
+# unitvector in the direction of the B-field (time reversed)
+ub = get_unitvector(Tr.em_fields_mod.bfield3(r0))
+
+# initial velocity unit vectopr
+phi0 = 90.*dtr
+theta0 = 35.*dtr
+
+uv0 = np.array([np.cos(phi0)*np.sin(theta0),
+                np.sin(phi0)*np.sin(theta0),      
+                np.cos(theta0)])
+
+pitch_angle = np.arccos( np.dot (uv0, ub))/dtr
+print(" initial pitch angle = ", pitch_angle)
 
 #%% sperical angles of initial velocity
 # this is for the generation of a bundle, calculate a trasformation matrix that moves
 # the original z-direction into the direction of the initial velocity
 phi = pol_angle(uv0[0],uv0[1])
 theta = np.arccos(uv0[2])
+
+
 # rotation matrices
 Rz = np.array([ [ np.cos(phi), -np.sin(phi), 0.],
                  [ np.sin(phi), np.cos(phi),  0.],
@@ -110,12 +137,12 @@ Tr.control_mod.print_hit = True
 #%%
 t_start = time.time()  # for timing
 # numer of trajectories
-n_traj = 10
+n_traj = 1
 # store results in bundle
 bundle = []
 for i in range(n_traj):
     # select a small random offset
-    xr,yr = get_random_point(.05)
+    xr,yr = get_random_point(.0)
     dv = np.matmul(R_tot, np.array([xr, yr, 0.]) ) * Tr.tracker.vmag      
     vi = v0 + dv
     # calculate track result is in Tt.tracker.trajectory array
