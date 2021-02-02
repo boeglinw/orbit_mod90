@@ -16,7 +16,8 @@ from LT.parameterfile import pfile
 
 import sys
 
-# setup the PYTHON path
+
+#%% setup the PYTHON path
 
 def add_sys_path(new_path):
     """ AddSysPath(new_path): adds a directory to Python's sys.path
@@ -47,7 +48,7 @@ def add_sys_path(new_path):
     return 1
 
 
-# location of the python modules for orbit_mod90 
+#%% location of the python modules for orbit_mod90 
 orbit_mod90_python = '/Users/boeglinw/Documents/boeglin.1/Fusion/Fusion_Products/orbit_mod90/python'
 
 if (add_sys_path(orbit_mod90_python)) < 0 :
@@ -126,17 +127,21 @@ limiter = gl.limiter('limiter_drawing.data')
 # Tr.control_mod.print_polygon = False
 
 #%% setup a detectors
+R_p = cd.get_value('detector_head_R')
+Z_p = cd.get_value('detector_head_Z')
+Phi_p = cd.get_value('detector_head_Phi')*dtr
 
+arm_rotation = cd.get_value('arm_rotation')*dtr
 
 detector_head = []
 
 for i,n  in enumerate(dh['Detector_number']):
     det_l = Det.detector(n, 
                         dh['Detector_name'][i], 
-                        position = np.array([dh['R_p'][i], dh['Z_p'][i], dh['Phi_p'][i]*dtr]), 
+                        position = np.array([R_p, Z_p, Phi_p]), 
                         pos_local = np.array([dh['xd'][i], dh['yd'][i], dh['zd'][i]]),
                         direction = np.array([dh['theta_d'][i]*dtr, dh['phi_d'][i]*dtr]), 
-                        rotation = cd.get_value('arm_rotation')*dtr,
+                        rotation = arm_rotation,
                         tracker = Tr,
                         bundle_fname = f'det_{n}_'+dh['Detector_name'][i]+'.npz')
     detector_head.append(det_l)

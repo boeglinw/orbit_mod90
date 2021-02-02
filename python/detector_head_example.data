@@ -5,10 +5,10 @@
 
 # Detector location and orientation
 
-#! Detector_number[i,0]/ Detector_name[s,1]/ R_p[f,2]/ Z_p[f,3]/ Phi_p[f,4]/ theta_d[f,5]/ phi_d[f,6]/ xd[f,7]/ yd[f,8]/ zd[f,9]/
+#! Detector_number[i,0]/ Detector_name[s,1]/ theta_d[f,5]/ phi_d[f,6]/ xd[f,7]/ yd[f,8]/ zd[f,9]/
 
-  0                      Channel0            1.6       0.         0.         45.           0.          0.       0.       0.
-  1                      Channel1            1.6       0.         0.         55.           0.          0.05     0.       0.05
+  0                      Channel0             45.           0.          0.       0.       0.
+  1                      Channel1             55.           0.          0.05     0.       0.05
 
-  2                      Channel2            1.6       0.         0.         65.           0.          0.       0.       0.
-  4                      Channel3            1.6       0.         0.         75.           0.          0.05     0.       0.05
+  2                      Channel2             65.           0.          0.       0.       0.
+  4                      Channel3             75.           0.          0.05     0.       0.05
