@@ -47,6 +47,20 @@ def add_sys_path(new_path):
     sys.path.append(new_path)
     return 1
 
+#%% plot a ring, used for plasma plotting
+def plot_ring(rs, rl, ax, n = 50 , **kwargs ):
+    radii = [rs, rl]
+    theta = np.linspace(0, 2*np.pi, n, endpoint=True)
+    xs = np.outer(radii, np.cos(theta))
+    ys = np.outer(radii, np.sin(theta))
+    
+    # in order to have a closed area, the circles
+    # should be traversed in opposite directions
+    xs[1,:] = xs[1,::-1]
+    ys[1,:] = ys[1,::-1]
+    
+    ax.fill(np.ravel(xs), np.ravel(ys), **kwargs)# , edgecolor='#348ABD')
+
 
 #%% location of the python modules for orbit_mod90 
 orbit_mod90_python = '/Users/boeglinw/Documents/boeglin.1/Fusion/Fusion_Products/orbit_mod90/python'
@@ -67,7 +81,7 @@ import get_limiter as gl
 
 dtr = np.pi/180.
 
-det_colors = ['r','g','b', 'y', 'm', 'c', 'o', 'k']
+det_colors = ['y','g','b', 'm', 'c', 'o', 'k']
 
 trackers = {'Boris':Tr.tracker.boris_t, 'Bulirsch_stoer':Tr.tracker.bulirsch_stoer_t}
 
@@ -154,11 +168,42 @@ for det_l in detector_head:
     det_l.calc_trajectories()
 
 
+#%% prepare to plot the plasma
+# get the boundary data
+nbdry = Tr.flux_par_mod.nbdry
+zbdry = Tr.flux_par_mod.zbdry[:nbdry]
+rbdry = Tr.flux_par_mod.rbdry[:nbdry]
+
+phibdry = np.linspace(0., 2.*np.pi, 36)
+RR,PP = np.meshgrid(rbdry, phibdry)
+ZZ,PP = np.meshgrid(zbdry, phibdry)
+XX = RR*np.cos(PP)
+YY = RR*np.sin(PP)
+
+r_plasma_min = rbdry.min()
+r_plasma_max = rbdry.max()
+
+#%% prepare plotting the flux
+mh = Tr.flux_par_mod.mh # number of horzontal flux grid point
+mw = Tr.flux_par_mod.mw # number of vertical flux grid points
+n_tot_flux = mw*mh      # number of total flux grid points
+
+# get the flux as 2d array
+psi = Tr.flux_par_mod.psi[:n_tot_flux].reshape((mw,mh)).T
+
+# setup the grid point arrays
+rg = Tr.flux_par_mod.rgrid[:mw]
+zg = Tr.flux_par_mod.zgrid[:mw]
+
+rrg,zzg = np.meshgrid(rg, zg)
+
+
 #%% Plotting
 # close all figures using close('all') 
 # make 3d plot
 fig3d = B.pl.figure()
 ax = fig3d.add_subplot(111, projection='3d')
+ax.plot_surface(XX, YY, ZZ, color = 'r', alpha = 0.2)
 
 # plot all  in det_l
 for dd in detector_head:
@@ -178,6 +223,12 @@ ax.set_zlabel('Z')
 fig_rz = B.pl.figure()
 limiter.draw_side_all()
 
+# draw the flux
+B.pl.contour(rrg,zzg, psi, levels = 40)
+
+# draw the plasma
+B.pl.plot(rbdry, zbdry, color = 'r')
+
 # plot all  in det_l
 for dd in detector_head:
     for b in dd.bundle:
@@ -191,6 +242,10 @@ B.pl.xlim((0.,2.))
 #%% midplane plot
 fig_mid = B.pl.figure()
 limiter.draw_top_all()
+
+# draw the plasma
+plot_ring(r_plasma_min, r_plasma_max, B.pl.gca(), color = 'r', alpha = 0.2, edgecolor = None)
+
 # plot all  in det_l
 for dd in detector_head:
     for b in dd.bundle:

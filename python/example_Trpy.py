@@ -69,6 +69,15 @@ Tr.tracker.init_tracker()
 # load flux i.e the magneit field and its interpolations
 Tr.tracker.load_flux()
 
+#%% setup the limiter
+
+Tr.limiter_control_mod.set_limiter_file_name('MASTLIMIT00.dat')
+Tr.limiter_control_mod.set_limiter_directory('../example_data/')
+Tr.limiter_control_mod.limiter_init()
+Tr.control_mod.check_limiter = True
+Tr.control_mod.print_hit = True
+
+#%%
 # set initial track position
 r0 = np.array([0.29375441571112459,
                1.6341828183759661,    
@@ -100,13 +109,7 @@ R_tot = np.matmul(Rz,Ry)
 v0 = Tr.tracker.vmag*uv0 
 
 
-#%% setup the limiter
 
-Tr.limiter_control_mod.set_limiter_file_name('MASTLIMIT00.dat')
-Tr.limiter_control_mod.set_limiter_directory('../example_data/')
-Tr.limiter_control_mod.limiter_init()
-Tr.control_mod.check_limiter = True
-Tr.control_mod.print_hit = True
 #%%
 t_start = time.time()  # for timing
 # numer of trajectories
