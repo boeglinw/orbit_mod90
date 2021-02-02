@@ -4,30 +4,30 @@ module em_fields_mod
   use helper_functions_mod
   use control_mod
   implicit none
-  
+
 contains
-  
-  function bfield (r_loc, z_loc)  result(bf) 
+
+  function bfield (r_loc, z_loc)  result(bf)
     !**********************************************************************
-    !                                                                  
-    !     SUBPROGRAM DESCRIPTION:                                      
-    !          bfield returns the interpolated field                   
-    !                                                                  
+    !
+    !     SUBPROGRAM DESCRIPTION:
+    !          bfield returns the interpolated field
+    !
     !     CALLING ARGUMENTS:
     !           r_loc.........r-position (input)
     !           z_loc.........z-position (input)
     !
     !           bf( bpolr, bpolz, bphi, btotal) (output)
     !
-    !           bpolr........r-Bfield component 
-    !           bpolz........z-Bfield component 
+    !           bpolr........r-Bfield component
+    !           bpolz........z-Bfield component
     !           bphi.........phi-Bfield component
-    !           btotal........Bfield magnitude 
-    !                                                                  
+    !           btotal........Bfield magnitude
+    !
     !          09/22/2018........changed top f90 W. Boeglin
     !          06/03/2020........rewritten W. Boeglin
 
-    !                                                                  
+    !
     !**********************************************************************
 
 
@@ -51,7 +51,7 @@ contains
     logical:: is_outside_grid, is_inside, in_closed_flux_surface
 
     ! field components
-    real(kind = 8) :: bpolr, bpolz, bphi  
+    real(kind = 8) :: bpolr, bpolz, bphi
     ! magnitude
     real(kind = 8) :: btotal
 
@@ -72,7 +72,7 @@ contains
     ! check if point is inside grid from EQDSK file
     is_outside_grid = (r_loc.lt.rgrid(1)) .or. (r_loc.gt.rgrid(mw)) .or. (z_loc.lt.zgrid(1)) .or.  (z_loc.gt.zgrid(mh))
 
-    if ( is_outside_grid ) then     
+    if ( is_outside_grid ) then
        ! come here if point is out of field grid
        if (info) then
           print *, ' In flux, (R,Z) is outside grid: (',r_loc, z_loc,'), set field to 1e-8'
@@ -103,18 +103,18 @@ contains
     dpsi_dz = pds(3)
 
     ! poloidal field
-    bpolz = dpsi_dr / r_loc  
-    bpolr = - dpsi_dz / r_loc  
-    bpol = sqrt (bpolr * bpolr + bpolz * bpolz)  
+    bpolz = dpsi_dr / r_loc
+    bpolr = - dpsi_dz / r_loc
+    bpol = sqrt (bpolr * bpolr + bpolz * bpolz)
 
 
     ! calculate relative flux, interpolated value is stored in pds(1)
     ! sifb and sifm are from read_eqdsk
 
-    if (abs (sifb - sifm) .gt.1.e-8) then  
-       xsinow = (psi_loc - sifm) / (sifb - sifm)  
-    else  
-       xsinow = 1.2       
+    if (abs (sifb - sifm) .gt.1.e-8) then
+       xsinow = (psi_loc - sifm) / (sifb - sifm)
+    else
+       xsinow = 1.2
     endif
 
     !     Check to see whether sample point is inside limiter region
@@ -123,31 +123,31 @@ contains
     ! interpolate poloidal stream function
 
     if (debug) then
-       print *, 'in close flux surface = ', in_closed_flux_surface
+       print *, 'in closed flux surface = ', in_closed_flux_surface
        print *, 'plasma current = ', current
        print *, 'relative flux = ', xsinow
     endif
 
-    if (abs (current) .gt.10.) then       
-       if ( in_closed_flux_surface .and. (xsinow .le. 1.) ) then  
+    if (abs (current) .gt.10.) then
+       if ( in_closed_flux_surface .and. (xsinow .le. 1.) ) then
           !     take this branch if inside limiter and psi small enough i.e. inside plasma boundary
           fpnow = seval(mwfpol, xsinow, xxxsi, fpol, bfpol, cfpol, dfpol)
           ! fpnow = spline_eval(mwfpol, xsinow, xxxsi, fpol, bfpol, cfpol, dfpol)
-       else  
-          fpnow = fpol (mwfpol)  
+       else
+          fpnow = fpol (mwfpol)
        endif
-    else  
-       fpnow = rzero * bzero  
+    else
+       fpnow = rzero * bzero
     endif
 
     ! toroidal field
     bphi = fpnow / r_loc
 
     !----------------------------------------------------------------------
-    !   Total B field 
+    !   Total B field
     !----------------------------------------------------------------------
 
-    btotal = sqrt (bphi * bphi + bpol * bpol)  
+    btotal = sqrt (bphi * bphi + bpol * bpol)
 
     bf(1) = bpolr
     bf(2) = bpolz
@@ -155,10 +155,10 @@ contains
     bf(4) = btotal
 
     if (time_reversed) then ! reverse field for time reversed calculations
-       bf = -bf       
+       bf = -bf
     endif
 
-    return  
+    return
 
 
   end function bfield
@@ -217,5 +217,5 @@ contains
     return
   end function efield
 
-  
+
 end module em_fields_mod
