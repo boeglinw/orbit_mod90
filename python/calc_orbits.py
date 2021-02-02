@@ -7,14 +7,22 @@ Main driving script to calculate orbits or orbit bundles
 
 controlled by input file
 
+this code can be run from the command line or ipython:
+    
+    %run calc_orbits.py -c 'my_control.data' -P '/where/your/modules/are/located/'
+
 @author: boeglinw
 """
+
+
+import sys
+import argparse as AG
 
 import numpy as np
 import LT.box as B
 from LT.parameterfile import pfile
 
-import sys
+
 
 
 #%% setup the PYTHON path
@@ -47,6 +55,7 @@ def add_sys_path(new_path):
     sys.path.append(new_path)
     return 1
 
+
 #%% plot a ring, used for plasma plotting
 def plot_ring(rs, rl, ax, n = 50 , **kwargs ):
     radii = [rs, rl]
@@ -61,6 +70,20 @@ def plot_ring(rs, rl, ax, n = 50 , **kwargs ):
     
     ax.fill(np.ravel(xs), np.ravel(ys), **kwargs)# , edgecolor='#348ABD')
 
+
+
+#%% input section get comman line arguments
+parser = AG.ArgumentParser(formatter_class=AG.ArgumentDefaultsHelpFormatter)
+
+parser.add_argument('-c', '--control_file', help="orbit calculation control file", 
+                    default = 'calc_orbit_control.data')
+parser.add_argument('-P', '--orbit_mod90_path', help="Path to orbit_mod90 python modules ( will be added to PYTHONPATH", 
+                    default = '/Users/boeglinw/Documents/boeglin.1/Fusion/Fusion_Products/orbit_mod90/python')
+
+# setup parser
+args = parser.parse_args()
+
+orbit_mod90_python = args.orbit_mod90_path
 
 #%% location of the python modules for orbit_mod90 
 orbit_mod90_python = '/Users/boeglinw/Documents/boeglin.1/Fusion/Fusion_Products/orbit_mod90/python'
@@ -89,7 +112,7 @@ trackers = {'Boris':Tr.tracker.boris_t, 'Bulirsch_stoer':Tr.tracker.bulirsch_sto
 #%%  control file input
 
 # load control file, this is a pure parameter file
-cd = pfile('example_control.data')
+cd = pfile(args.control_file)
 
 # this is a data file describing the detector head
 dh = B.get_file(cd['detector_head'])
