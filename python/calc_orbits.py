@@ -102,9 +102,23 @@ import detectors as Det
 # limiter drawing
 import get_limiter as gl
 
+# for cycling thourh colors
+from itertools import cycle, islice
+
 dtr = np.pi/180.
 
-det_colors = ['y','g','b', 'm', 'c', 'o', 'k']
+color_list = ['r','g','b', 'm', 'c', 'y']
+
+# setup for color cycling
+color_cycle = cycle(color_list)
+
+def take(iterable, start=0, stop=1):
+    # Return first n items of the iterable as a list
+    # in the case for colors
+    # selected_colors = take(color_cycle, start = 0, end = 20)
+    # get the 20 element of the color_list, if the list is exhausted start at the beginning
+    # hence cycling
+    return list(islice(iterable, start, stop))
 
 trackers = {'Boris':Tr.tracker.boris_t, 'Bulirsch_stoer':Tr.tracker.bulirsch_stoer_t}
 
@@ -190,6 +204,7 @@ for det_l in detector_head:
 for det_l in detector_head:
     det_l.calc_trajectories()
 
+det_colors = take(color_cycle, stop = len(detector_head))
 
 #%% prepare to plot the plasma
 # get the boundary data

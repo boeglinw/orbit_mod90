@@ -6,20 +6,20 @@ module limiter_mod
 
   implicit none
 
-  
+
   !    ntorreg number of toroidal regions (ie intervals in phi, the toroidal
   !       angle).  must be .le. ntorrmx
   !     phi_start toroidal angle at which each toroidal region starts (ending
   !       angle is the same as the starting angle of the next region, and
-  !       there is one extra element at the end of this array, which is 
+  !       there is one extra element at the end of this array, which is
   !       set, by definition, to 2*pi) !     ntorrmx is the maximum number of toroidal regions (ie intervals in
   !       phi, the toroidal angle).  used to dimension arrays.
 
-  
+
   integer(kind = 4), parameter :: npolyvmx = 100 ! maximum number of points in a polygon
   integer(kind = 4), parameter :: npolymx = 10 ! max number pof polygons per toroidal region
-  integer(kind = 4),parameter :: ntorrmx = 30  ! max number of toroidal regiuons
-  
+  integer(kind = 4),parameter :: ntorrmx = 30  ! max number of toroidal regions
+
   type polygon
      integer(kind = 4) :: nv
      logical :: intersects_midplane
@@ -39,25 +39,25 @@ module limiter_mod
   !       angle).  must be .le. ntorrmx
   !     phi_start: toroidal angle at which each toroidal region starts (ending
   !       angle is the same as the starting angle of the next region, and
-  !       there is one extra element at the end of this array, which is 
+  !       there is one extra element at the end of this array, which is
   !       set, by definition, to 2*pi)
 
   integer(kind = 4) :: ntorreg
   real(kind = 8), dimension(ntorrmx + 1) :: phi_start ! phy starting angles for toroidal regions
   type(tor_region), dimension(ntorrmx + 1) ::t_regions ! toroidal regions
-  
+
   character(len = 132) :: limiter_filename = ''
   character(len = 132) :: limiter_directory = ''
-  
+
   ! nlimf is the unit number for reading the limiter data file
   integer(kind = 4), parameter :: nlimf = 17
 
   logical :: limiter_initialized = .false.
-  
+
 contains
 
 
-  
+
   function locate (z, zlist, nz) result(pos)
 
     !  This function searches through a list of z values (assumed
@@ -67,7 +67,7 @@ contains
     !  the list, then an index of -1 is returned.
 
     implicit none
-    
+
     real(kind = 8), intent (in) :: z
     real(kind = 8), dimension(nz), intent(in) :: zlist
     integer(kind = 4), intent(in) :: nz
@@ -80,7 +80,7 @@ contains
        pos = -1
        return
     endif
-    
+
     !   set up binary search
     top = nz
     bot = 1
@@ -94,7 +94,7 @@ contains
        endif
        if (z .lt. zlist(mid)) then
           top = mid
-       else             
+       else
           bot = mid
        endif
        mid = (top + bot) / 2
@@ -133,7 +133,7 @@ contains
     integer(kind = 4) :: i
 
     ! print only if print_polygon is set
-    
+
     if (print_polygon) then
        print *,'---------------------------------------------------------------'
        print *,'comment = ', c
@@ -144,10 +144,10 @@ contains
        print *,'---------------------------------------------------------------'
     endif
   end subroutine print_poly
-    
-    
+
+
   subroutine get_mid_plane(p)
-    ! find mid-plane intersection of polygon, is none exist the values for x0 are large negative numbers
+    ! find mid-plane intersection of polygon, if none exist the values for x0 are large negative numbers
     implicit none
     type(polygon), intent(inout):: p
     integer(kind = 4) :: i, j, nm
@@ -183,12 +183,12 @@ contains
        x_loc(1) = x_loc(2)  ! make new position the old position for next iteration
        y_loc(1) = y_loc(2)
     enddo
-    ! find min and mac values
+    ! find min and max values
     rmin = 100.
     rmax = -100
     if (nm .eq. 0) then
        ! no interseection found, set values to nonsensical values
-       p%x0_min = 1.e10    ! mina 
+       p%x0_min = 1.e10    ! mina
        p%x0_max = -1.e10
     else
        p%x0_min = minval(rmid(1:nm))
@@ -199,20 +199,20 @@ contains
     return
   end subroutine get_mid_plane
 
-    
+
   subroutine init_limiter
     ! This routine reads in the data which describes the non-axisymmetric
     ! limiter outline (as regions demarcated by toroidal angle).  This
     ! data is then used by the subroutine INTLIM which tests to see whether
     ! the particle has hit the limiter.
-    
+
     implicit none
-    
+
     real(kind = 8) :: loc_phi
-    !     CDUM for skipping comment lines in input file
-    character(len = 4) :: cdum
+    !     t_region_name for information only
+    character(len = 80) :: t_region_name
     integer(kind = 4) ::i, j, k, itor, jpol, nmid, npoly, ioerr
-    
+
     nmid = 0 ! for counting number of mid-plane sections for drawing
 
     if (limiter_directory .eq. '') then
@@ -225,7 +225,7 @@ contains
        limiter_initialized = .false.
        return
     endif
-    
+
     ! read limiter data file
     open (unit=nlimf, file=TRIM(ADJUSTL(limiter_directory))//'/'//limiter_filename, status='old', iostat = ioerr)
     if (ioerr .ne. 0) then
@@ -237,18 +237,18 @@ contains
     READ(nlimf, *)    ! skip comment line
     READ(nlimf, *) ntorreg
     print *, 'Number of toroidal regions =', ntorreg
-    
+
     if ((ntorreg .gt. ntorrmx) .or. (ntorreg .le. 0)) then
        print *, ' Number of toroidal regions for limiter, ', ntorreg, ' must be between 0 and ', ntorrmx, ', but is not.'
        stop
     endif
-    
-    !     For number of toroidal regions specified, read starting toroidal angle, 
+
+    !     For number of toroidal regions specified, read starting toroidal angle,
     !     number of polygons and number of points in each polygon,
     !     then read the actual coordinates.
-    
+
     do itor= 1, ntorreg
-       READ(nlimf, '(a4)') cdum
+       READ(nlimf, '(a80)') t_region_name
        READ(nlimf, *) loc_phi
        if ((loc_phi .lt. 0.0) .or. (loc_phi .ge. 360.0)) then
           print *, ' Angle defining range of limiter is less than 0 or greater than 360 degrees: ', loc_phi,&
@@ -269,10 +269,10 @@ contains
              stop
           endif
        endif
-       
+
        ! read the polygons for region itor
        READ(nlimf, *) npoly
-       print *, 'toroidal region # ', itor
+       print *, 'toroidal region # ', itor, ' named : ', t_region_name
        print *, 'Phistt = ', loc_phi
        print *, 'Number of polygons =', npoly
        if (npoly .gt. npolymx) then
@@ -304,25 +304,24 @@ contains
        ! find rmin and rmax at mid-plane for later drawing for the first (main) polygon
        call get_mid_plane(t_regions(itor)%poly(1))
        if ( t_regions(itor)%poly(1)%intersects_midplane ) nmid = nmid + 1
+       print *, '----> itor = ', itor, '  nmid = ', nmid
     enddo
-    
+
     t_regions(ntorreg+1)%phi_start = twopi
     t_regions(ntorreg+1)%np  = 0
     phi_start(ntorreg+1) = twopi
-    
+
     close (unit=nlimf)
     limiter_initialized = .true.
-    
+
     ! write the data for plotting
     open(52, file = 'limiter_drawing.data')
 
-    ! R Z poins for the limiter regions 
+    ! R Z poins for the limiter regions
     do itor= 1, ntorreg
-       write (52, *) '-region ', itor, phi_start(i)
        write (52, *) '-region ', itor, t_regions(itor)%phi_start
-       
        do k = 1, t_regions(itor)%np
-          write (52,*) '--polygon, ', t_regions(itor)%poly(k)%nv  
+          write (52,*) '--polygon, ', t_regions(itor)%poly(k)%nv
           do j = 1, t_regions(itor)%poly(k)%nv
              write(52, *) t_regions(itor)%poly(k)%x(j), t_regions(itor)%poly(k)%y(j)
           enddo
@@ -350,12 +349,12 @@ contains
   end subroutine init_limiter
 
 
-  
+
   function  limiter_hit (r, z, phi_v) result(hitlim)
-    
+
     ! This routine checks to see whether a particle has struck the
-    ! limiter on its most recent step in its orbit. Return the 
-    ! logical variable HITLIM as TRUE if particle has hit the 
+    ! limiter on its most recent step in its orbit. Return the
+    ! logical variable HITLIM as TRUE if particle has hit the
     ! limiter, FALSE otherwise.  The particle is considered to have
     ! hit the limiter if it is on the line forming the outline of
     ! the limiter, or is on the side of that line away from where
@@ -377,7 +376,7 @@ contains
        hitlim = .true.
        return
     endif
-    
+
     ! set HITLIM to .TRUE. if particle has hit limiter.
     hitlim = .false.
     ! First, compute phi (toroidal position) of particle, modulo 2*pi.
@@ -409,7 +408,7 @@ contains
        hitlim = .true.
     endif
     return
-    
+
   end function limiter_hit
 
 
@@ -417,7 +416,7 @@ contains
     real(kind = 8), dimension(3), intent(in) :: r
     logical :: hit
     real(kind = 8) :: rt, zt, phit
-    
+
     ! convert to toroidal coordinates
     rt = sqrt(r(1)**2 + r(2)**2)
     zt = r(3)
@@ -431,7 +430,7 @@ contains
     endif
     return
   end function hit_lim
-  
+
   function hit_lim_tor(r) result(hit)
     ! assuming r: r(1) = r, r(2) = phi, r(3) = z
     real(kind = 8), dimension(3), intent(in) :: r
@@ -445,6 +444,5 @@ contains
     endif
     return
   end function hit_lim_tor
-  
-end module limiter_mod
 
+end module limiter_mod
