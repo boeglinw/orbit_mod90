@@ -17,7 +17,7 @@ F90     = gfortran
 
 # FDFLAG  = -fd-lines-as-code
 
-FFLAGS  = -ffixed-line-length-none $(FDFLAG) \
+FFLAGS  = -ffixed-line-length-none $(FDFLAG) -fPIC \
           -w -fno-automatic -I$(INCLUDE)
 
 
@@ -32,7 +32,7 @@ all: $(MODOBJ) $(THIS_LIB)
 
 
 test_limiter: test_limiter.o $(MODOBJ)
-	$(F90)  -L$(MODULES) -lmodules -L$(LIMITER) -llimiter -L$(FLUX) -lflux -L$(SPLINE) -lspline -L$(RDEQDSK) -lread_eqdsk  test_limiter.o -o test_limiter
+	$(F90)  test_limiter.o  -L$(LIMITER) -llimiter -L$(FLUX) -lflux  -L$(RDEQDSK) -lread_eqdsk -L$(MODULES) -lmodules -L$(SPLINE) -lspline  -o test_limiter
 
 
 $(THIS_LIB): $(MODOBJ)

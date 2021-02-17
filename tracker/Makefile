@@ -20,7 +20,7 @@ F90     = gfortran
 
 # FDFLAG  = -fd-lines-as-code
 
-FFLAGS  = -ffixed-line-length-none $(FDFLAG) \
+FFLAGS  = -ffixed-line-length-none -fPIC $(FDFLAG) \
           -w -fno-automatic -I$(INCLUDE)
 
 THIS_LIB = libtracker.a
@@ -32,7 +32,7 @@ all: $(MODOBJ) $(THIS_LIB)
 	$(F90) $(FFLAGS) -c $<
 
 test_Tr: test_Tr.o $(MODOBJ)
-	$(F90)  -L$(MODULES) -lmodules -L$(BORIS) -lboris -L$(FLUX) -lflux -L$(SPLINE) -lspline -L$(RDEQDSK) -lread_eqdsk  -L$(TRACKER) -ltracker -L$(BORIS) -lboris -L$(LIMITER) -llimiter -L$(BSINTEGRATOR) -lbs_integrator -L$(TRACKER) -ltracker test_Tr.o -o test_Tr
+	$(F90) test_Tr.o   -L$(TRACKER) -ltracker -L$(BORIS) -lboris  -L$(BSINTEGRATOR) -lbs_integrator -L$(LIMITER) -llimiter -L$(FLUX) -lflux  -L$(RDEQDSK) -lread_eqdsk -L$(MODULES) -lmodules -L$(SPLINE) -lspline -o test_Tr
 
 
 $(THIS_LIB): $(MODOBJ)

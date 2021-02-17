@@ -21,7 +21,7 @@ F2PY_F2   = -c --fcompiler=gfortran --f90flags="-ffixed-line-length-none -w -fno
 
 PROGRAM = Trpy
 
-LIBS = -L$(INCLUDE) -lmodules  -L$(FLUX) -lflux -L$(SPLINE) -lspline -L$(RDEQDSK) -lread_eqdsk -L$(BORIS) -lboris -L$(BSINTEGRATOR) -lbs_integrator -L$(TRACKER) -ltracker -L$(LIMITER) -llimiter 
+LIBS = -L$(TRACKER) -ltracker -L$(BORIS) -lboris  -L$(BSINTEGRATOR) -lbs_integrator -L$(LIMITER) -llimiter -L$(FLUX) -lflux  -L$(RDEQDSK) -lread_eqdsk -L$(MODULES) -lmodules -L$(SPLINE) -lspline
 
 #----------------------------------------------------------
 all: $(OBJ)

@@ -34,7 +34,8 @@ class detector:
                  tracker = None,
                  rotation = 0.,
                  bundle_fname = 'bundle.npz',
-                 comment = ''
+                 comment = '',
+                 color = 'r'
                  ):
         # this is for the generation of a bundle, calculate a trasnformation matrix that moves
         # the original z-direction into the direction of the initial velocity
@@ -55,6 +56,7 @@ class detector:
         if tracker is not None:
             self.set_tracker(tracker)
         self.bundle_fname = bundle_fname
+        self.color = color    # color for drawing trajectories
         
     def set_tracker(self, Tr_l):
         # set the magnetic field tracker used

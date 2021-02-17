@@ -20,7 +20,7 @@ F90     = gfortran
 
 # FDFLAG  = -fd-lines-as-code
 
-FFLAGS  = -ffixed-line-length-none $(FDFLAG) \
+FFLAGS  = -ffixed-line-length-none $(FDFLAG) -fPIC\
           -w -fno-automatic -I$(INCLUDE)
 
 THIS_LIB = libbs_integrator.a

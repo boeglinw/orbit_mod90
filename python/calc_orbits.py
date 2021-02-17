@@ -22,6 +22,12 @@ import numpy as np
 import LT.box as B
 from LT.parameterfile import pfile
 
+# colored trajectories
+import matplotlib.colors as COL
+# colors list
+color_table = COL.CSS4_COLORS
+color_names = list(color_table.keys())
+
 
 
 
@@ -102,23 +108,7 @@ import detectors as Det
 # limiter drawing
 import get_limiter as gl
 
-# for cycling thourh colors
-from itertools import cycle, islice
-
 dtr = np.pi/180.
-
-color_list = ['r','g','b', 'm', 'c', 'y']
-
-# setup for color cycling
-color_cycle = cycle(color_list)
-
-def take(iterable, start=0, stop=1):
-    # Return first n items of the iterable as a list
-    # in the case for colors
-    # selected_colors = take(color_cycle, start = 0, end = 20)
-    # get the 20 element of the color_list, if the list is exhausted start at the beginning
-    # hence cycling
-    return list(islice(iterable, start, stop))
 
 trackers = {'Boris':Tr.tracker.boris_t, 'Bulirsch_stoer':Tr.tracker.bulirsch_stoer_t}
 
@@ -182,6 +172,7 @@ R_p = cd.get_value('detector_head_R')
 Z_p = cd.get_value('detector_head_Z')
 Phi_p = cd.get_value('detector_head_Phi')*dtr
 
+
 arm_rotation = cd.get_value('arm_rotation')*dtr
 
 detector_head = []
@@ -194,7 +185,8 @@ for i,n  in enumerate(dh['Detector_number']):
                         direction = np.array([dh['theta_d'][i]*dtr, dh['phi_d'][i]*dtr]), 
                         rotation = arm_rotation,
                         tracker = Tr,
-                        bundle_fname = f'det_{n}_'+dh['Detector_name'][i]+'.npz')
+                        bundle_fname = f'det_{n}_'+dh['Detector_name'][i]+'.npz',
+                        color = dh['color'][i])
     detector_head.append(det_l)
 # initialize
 for det_l in detector_head:
@@ -203,8 +195,6 @@ for det_l in detector_head:
 # calculate trajectories
 for det_l in detector_head:
     det_l.calc_trajectories()
-
-det_colors = take(color_cycle, stop = len(detector_head))
 
 #%% prepare to plot the plasma
 # get the boundary data
@@ -249,7 +239,7 @@ for dd in detector_head:
         x = b[0]
         y = b[1]
         z = b[2]
-        B.pl.plot(x,y,z, color = det_colors[dd.number])
+        B.pl.plot(x,y,z, color = color_table[dd.color])
 # B.pl.plot(xpz,ypz,zpz, color = 'g')
 
 ax.set_xlabel('X')
@@ -272,7 +262,7 @@ for dd in detector_head:
     for b in dd.bundle:
         r = b[3]
         z = b[2]
-        B.pl.plot(r,z, color = det_colors[dd.number])
+        B.pl.plot(r,z, color = color_table[dd.color])
 B.pl.ylim((-2.,2.))
 B.pl.xlim((0.,2.))
 
@@ -289,7 +279,7 @@ for dd in detector_head:
     for b in dd.bundle:
         x = b[0]
         y = b[1]
-        B.pl.plot(x,y, color = det_colors[dd.number])
+        B.pl.plot(x,y, color = color_table[dd.color])
 B.pl.ylim((-2.,2.))
 B.pl.xlim((-2.,2.))
 

@@ -14,11 +14,11 @@ MODULES    = ../include/
 F2PY     = f2py
 
 F2PY_F1   = --include-path $(INCLUDE) --overwrite-signature -m 
-F2PY_F2   = -c --fcompiler=gfortran --f90flags="-ffixed-line-length-none -w -fno-automatic -I../include/"
+F2PY_F2   = -c --fcompiler=gfortran --f90flags="-ffixed-line-length-none -w -fno-automatic -fPIC -I../include/"
 
 PROGRAM = fluxpy
 
-LIBS = -L$(INCLUDE) -lmodules  -L$(FLUX) -lflux -L$(SPLINE) -lspline -L$(RDEQDSK) -lread_eqdsk 
+LIBS = -L$(FLUX) -lflux -L$(RDEQDSK) -lread_eqdsk -L$(INCLUDE) -lmodules   -L$(SPLINE) -lspline  
 
 #----------------------------------------------------------
 all: $(OBJ)

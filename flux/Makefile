@@ -16,7 +16,9 @@ F90     = gfortran
 
 # FDFLAG  = -fd-lines-as-code
 
-FFLAGS  = -ffixed-line-length-none $(FDFLAG) \
+
+
+FFLAGS  = -ffixed-line-length-none -fPIC $(FDFLAG) \
           -w -fno-automatic -I$(INCLUDE)
 
 
@@ -32,11 +34,11 @@ all: $(MODOBJ) $(THIS_LIB)
 
 
 test_bfield: test_bfield.o $(MODOBJ)
-	$(F90)  -L$(MODULES) -lmodules -L$(FLUX) -lflux -L$(SPLINE) -lspline -L$(RDEQDSK) -lread_eqdsk  test_bfield.o -o test_bfield
+	$(F90)  test_bfield.o -L$(FLUX) -lflux -L$(RDEQDSK) -lread_eqdsk  -L$(MODULES) -lmodules -L$(SPLINE) -lspline  -o test_bfield
 
 
 test_checklim: test_checklim.o $(MODOBJ)
-	$(F90)  -L$(MODULES) -lmodules -L$(FLUX) -lflux -L$(SPLINE) -lspline -L$(RDEQDSK) -lread_eqdsk  test_checklim.o -o test_checklim
+	$(F90)  test_checklim.o  -L$(FLUX) -lflux  -L$(RDEQDSK) -lread_eqdsk -L$(MODULES) -lmodules -L$(SPLINE) -lspline -o test_checklim
 
 
 $(THIS_LIB): $(MODOBJ)

@@ -18,7 +18,7 @@ F90     = gfortran
 
 # FDFLAG  = -fd-lines-as-code
 
-FFLAGS  = -ffixed-line-length-none $(FDFLAG) \
+FFLAGS  = -ffixed-line-length-none -fPIC $(FDFLAG) \
           -w -fno-automatic -I$(INCLUDE)
 
 THIS_LIB = libboris.a

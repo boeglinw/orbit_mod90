@@ -10,7 +10,7 @@ F90     = gfortran
 
 #FFLAGS = -ffixed-line-length-none -fd-lines-as-comments \
 
-FFLAGS = -ffixed-line-length-none $(FDFLAG) \
+FFLAGS = -ffixed-line-length-none $(FDFLAG) -fPIC \
          -fno-automatic -W -I$(INCLUDE)
 
 THIS_LIB = libspline.a

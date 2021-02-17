@@ -3,12 +3,17 @@
 # all angles in degrees
 # all positions in m
 
+# color is the color from the matplotlib.colors.CSS4_COLORS color table, see color_list in calc_orbits.py
+#
+# typical names are: red, blue, green, magenta, cyan etc.
+
+
 # Detector location and orientation
 
-#! Detector_number[i,0]/ Detector_name[s,1]/ theta_d[f,5]/ phi_d[f,6]/ xd[f,7]/ yd[f,8]/ zd[f,9]/
+#! Detector_number[i,0]/ Detector_name[s,1]/ theta_d[f,5]/ phi_d[f,6]/ xd[f,7]/ yd[f,8]/ zd[f,9]/  color[s,10]/
 
-  0                      Channel0             45.           0.          0.       0.       0.
-  1                      Channel1             55.           0.          0.05     0.       0.05
+  0                      Channel0             45.           0.          0.       0.       0.      red
+  1                      Channel1             55.           0.          0.05     0.       0.05    green
 
-  2                      Channel2             65.           0.          0.       0.       0.
-  4                      Channel3             75.           0.          0.05     0.       0.05
+  2                      Channel2             65.           0.          0.       0.       0.      blue
+  4                      Channel3             75.           0.          0.05     0.       0.05    magenta

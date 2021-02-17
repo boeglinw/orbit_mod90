@@ -9,7 +9,7 @@ INCLUDE = $(MODULES)
 
 F90     = gfortran
 
-FFLAGS  = -ffixed-line-length-none $(FDFLAG) \
+FFLAGS  = -ffixed-line-length-none $(FDFLAG) -fPIC \
           -w -fno-automatic -I$(INCLUDE)
 
 THIS_LIB = libboris_cylinder.a
