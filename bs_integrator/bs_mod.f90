@@ -272,7 +272,7 @@ contains
 
     ! loop to calculaye the requested step
     do n=1,maxstep
-       ! check if we overshot end pt, i.e. new x has to be withing x1 and x2
+       ! check if we overshot end pt, i.e. new x has to be within x1 and x2
        xx = x+htry
        if( (xx-x2)*(xx-x1) .gt. 0.0) htry=x2-x ! adjust htry to make sure the step stays withing x1 and x2
 

@@ -8,7 +8,8 @@ FLUX       = ./flux/
 RDEQDSK    = ./read_eqdsk/
 BORIS      = ./boris_pusher/
 LIMITER      = ./limiter/
-PYTHON      = ./python/
+PYTHON      = ./python_modules/
+PYTHONEX      = ./python_examples/
 BSINTEGRATOR = ./bs_integrator/
 TRACKER = ./tracker/
 
@@ -42,8 +43,7 @@ tracker_module:
 	cd $(TRACKER); make all
 
 
-
-python_modules:
+modules:
 	cd $(FLUX); make -f flux.mak
 	cd $(TRACKER); make -f Trpy.mak
 	cd $(BORIS); make -f BorisCylpy.mak
@@ -80,4 +80,5 @@ clean_tracker:
 	cd $(TRACKER); make clean
 
 clean_python:
-	cd $(PYTHON); rm *.so *.npz
+	cd $(PYTHON); rm *.so
+	cd $(PYTHONEX); rm *.so *.npz

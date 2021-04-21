@@ -8,7 +8,7 @@ Main driving script to calculate orbits or orbit bundles
 controlled by input file
 
 this code can be run from the command line or ipython:
-    
+
     %run calc_orbits.py -c 'my_control.data' -P '/where/your/modules/are/located/'
 
 @author: boeglinw
@@ -68,12 +68,12 @@ def plot_ring(rs, rl, ax, n = 50 , **kwargs ):
     theta = np.linspace(0, 2*np.pi, n, endpoint=True)
     xs = np.outer(radii, np.cos(theta))
     ys = np.outer(radii, np.sin(theta))
-    
+
     # in order to have a closed area, the circles
     # should be traversed in opposite directions
     xs[1,:] = xs[1,::-1]
     ys[1,:] = ys[1,::-1]
-    
+
     ax.fill(np.ravel(xs), np.ravel(ys), **kwargs)# , edgecolor='#348ABD')
 
 
@@ -81,10 +81,10 @@ def plot_ring(rs, rl, ax, n = 50 , **kwargs ):
 #%% input section get comman line arguments
 parser = AG.ArgumentParser(formatter_class=AG.ArgumentDefaultsHelpFormatter)
 
-parser.add_argument('-c', '--control_file', help="orbit calculation control file", 
+parser.add_argument('-c', '--control_file', help="orbit calculation control file",
                     default = 'calc_orbit_control.data')
-parser.add_argument('-P', '--orbit_mod90_path', help="Path to orbit_mod90 python modules ( will be added to PYTHONPATH", 
-                    default = '/Users/boeglinw/Documents/boeglin.1/Fusion/Fusion_Products/orbit_mod90/python')
+parser.add_argument('-P', '--orbit_mod90_path', help="Path to orbit_mod90 python modules ( will be added to PYTHONPATH",
+                    default = '/Users/boeglinw/Documents/boeglin.1/Fusion/Fusion_Products/orbit_mod90/python_modules')
 
 # setup parser
 args = parser.parse_args()
@@ -92,7 +92,7 @@ args = parser.parse_args()
 orbit_mod90_python = args.orbit_mod90_path
 
 #%% location of the python modules for orbit_mod90 
-orbit_mod90_python = '/Users/boeglinw/Documents/boeglin.1/Fusion/Fusion_Products/orbit_mod90/python'
+orbit_mod90_python = '/Users/boeglinw/Documents/boeglin.1/Fusion/Fusion_Products/orbit_mod90/python_modules'
 
 if (add_sys_path(orbit_mod90_python)) < 0 :
     print(f'Cannot add {orbit_mod90_python} to PYTHONPATH as it does not exist !')
@@ -123,9 +123,9 @@ dh = B.get_file(cd['detector_head'])
 
 
 #%%  set initial valuesfor tracker
-# 
+#
 Tr.tracker.particle_charge = cd.get_value('particle_charge')
-# Tr.tracker.particle_mass_amu = 1.007347  
+# Tr.tracker.particle_mass_amu = 1.007347
 Tr.tracker.particle_mass_amu = cd.get_value('particle_mass_amu')
 Tr.tracker.particle_energy_mev = cd.get_value('particle_energy_mev')
 
@@ -149,10 +149,10 @@ N_dir_det = cd.get_value('number_of_fib_directions')
 
 
 #%% initialize tracker: allocate space for trajectory data in BT.tracker.trajectory
-# 
+#
 Tr.tracker.init_tracker()
 #%% load flux i.e the magnetic field and its interpolations
-# 
+#
 Tr.tracker.load_flux()
 
 
@@ -178,11 +178,11 @@ arm_rotation = cd.get_value('arm_rotation')*dtr
 detector_head = []
 
 for i,n  in enumerate(dh['Detector_number']):
-    det_l = Det.detector(n, 
-                        dh['Detector_name'][i], 
-                        position = np.array([R_p, Z_p, Phi_p]), 
+    det_l = Det.detector(n,
+                        dh['Detector_name'][i],
+                        position = np.array([R_p, Z_p, Phi_p]),
                         pos_local = np.array([dh['xd'][i], dh['yd'][i], dh['zd'][i]]),
-                        direction = np.array([dh['theta_d'][i]*dtr, dh['phi_d'][i]*dtr]), 
+                        direction = np.array([dh['theta_d'][i]*dtr, dh['phi_d'][i]*dtr]),
                         rotation = arm_rotation,
                         tracker = Tr,
                         bundle_fname = f'det_{n}_'+dh['Detector_name'][i]+'.npz',
@@ -191,7 +191,7 @@ for i,n  in enumerate(dh['Detector_number']):
 # initialize
 for det_l in detector_head:
     det_l.init_trajectories(N_pos = N_pos_det, N_dir = N_dir_det)
-    
+
 # calculate trajectories
 for det_l in detector_head:
     det_l.calc_trajectories()
@@ -227,7 +227,7 @@ rrg,zzg = np.meshgrid(rg, zg)
 
 
 #%% Plotting
-# close all figures using close('all') 
+# close all figures using close('all')
 # make 3d plot
 fig3d = B.pl.figure()
 ax = fig3d.add_subplot(111, projection='3d')
@@ -284,5 +284,3 @@ B.pl.ylim((-2.,2.))
 B.pl.xlim((-2.,2.))
 
 B.pl.show()
-
-

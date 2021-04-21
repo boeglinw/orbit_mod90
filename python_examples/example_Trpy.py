@@ -9,14 +9,55 @@ Created on Mon Jun  8 15:55:58 2020
 import numpy as np
 import LT.box as B
 import time
-import Trpy as Tr
+
 import copy as C
 
 from mpl_toolkits.mplot3d import Axes3D
 
+#%% setup the PYTHON path
+
+def add_sys_path(new_path):
+    """ AddSysPath(new_path): adds a directory to Python's sys.path
+
+    Does not add the directory if it does not exist or if it's already on
+    sys.path. Returns 1 if OK, -1 if new_path does not exist, 0 if it was
+    already on sys.path.
+    """
+    import sys, os
+
+    # Avoid adding nonexistent paths
+    if not os.path.exists(new_path): return -1
+
+    # Standardize the path. Windows is case-insensitive, so lowercase
+    # for definiteness.
+    new_path = os.path.abspath(new_path)
+    if sys.platform == 'win32':
+        new_path = new_path.lower(  )
+
+    # Check against all currently available paths
+    for x in sys.path:
+        x = os.path.abspath(x)
+        if sys.platform == 'win32':
+            x = x.lower(  )
+        if new_path in (x, x + os.sep):
+            return 0
+    sys.path.append(new_path)
+    return 1
+
+#----------------------------------------------------------------------------------------------------------
+#%% location of the python modules for orbit_mod90 : Adjus this to your system
+orbit_mod90_python = '/Users/boeglinw/Documents/boeglin.1/Fusion/Fusion_Products/orbit_mod90/python_modules'
+#----------------------------------------------------------------------------------------------------------
 
 
-#%%  some helper functions 
+if (add_sys_path(orbit_mod90_python)) < 0 :
+    print(f'Cannot add {orbit_mod90_python} to PYTHONPATH as it does not exist !')
+    sys.exit(-1)
+
+#%% import Trpy
+import Trpy as Tr
+
+#%%  some helper functions
 # for simulation purposes only
 twopi = 2.*np.pi
 def pol_angle(x,y):
@@ -33,7 +74,7 @@ def get_random_point(r):
        outside = (x**2 + y**2 > r)
     return x,y
 
-#%% setup    
+#%% setup
 track_dir = '../example_data/'
 track_name = 'track_21111.data'
 # for comparison
@@ -47,7 +88,7 @@ yt = rt*np.sin(phit)
 #%%
 # set initial valuesfor tracker
 Tr.tracker.particle_charge = 1.
-# Tr.tracker.particle_mass_amu = 1.007347  
+# Tr.tracker.particle_mass_amu = 1.007347
 Tr.tracker.particle_mass_amu = 1.00   # this is not really accurate
 Tr.tracker.particle_energy_mev = 3.
 Tr.tracker.track_length = 6.
@@ -80,12 +121,12 @@ Tr.control_mod.print_hit = True
 #%%
 # set initial track position
 r0 = np.array([0.29375441571112459,
-               1.6341828183759661,    
+               1.6341828183759661,
                3.8310999999999998E-002])
 
 # initial velocity unit vectopr
 uv0 = np.array([0.47137247366158763,
-                -0.61971211944698446,      
+                -0.61971211944698446,
                 0.62750687652382131])
 
 #%% sperical angles of initial velocity
@@ -106,7 +147,7 @@ Ry = np.array([ [ np.cos(theta),  0., np.sin(theta)],
 R_tot = np.matmul(Rz,Ry)
 
 # set initial velocity
-v0 = Tr.tracker.vmag*uv0 
+v0 = Tr.tracker.vmag*uv0
 
 
 
@@ -119,18 +160,18 @@ bundle = []
 for i in range(n_traj):
     # select a small random offset
     xr,yr = get_random_point(.05)
-    dv = np.matmul(R_tot, np.array([xr, yr, 0.]) ) * Tr.tracker.vmag      
+    dv = np.matmul(R_tot, np.array([xr, yr, 0.]) ) * Tr.tracker.vmag
     vi = v0 + dv
     # calculate track result is in Tt.tracker.trajectory array
     nc = Tr.tracker.get_trajectory(r0, vi )
     print ('trajectory contains ', nc, ' steps' )
-    # need to copy the result values to store them 
-    x = C.copy(Tr.tracker.trajectory[:nc-1,0]) 
+    # need to copy the result values to store them
+    x = C.copy(Tr.tracker.trajectory[:nc-1,0])
     y = C.copy(Tr.tracker.trajectory[:nc-1,1])
     z = C.copy(Tr.tracker.trajectory[:nc-1,2])
     r = np.sqrt(x**2 + y**2)
-        
-    bundle.append((x, y, z, r))  # store trajectory information in a bundle 
+
+    bundle.append((x, y, z, r))  # store trajectory information in a bundle
 # all done
 t_end = time.time()
 print("Time used for ", n_traj, " tracks = ", t_end - t_start)
@@ -141,7 +182,7 @@ np.savez_compressed("bundle.npz", bundle = bundle)
 
 
 #%% Plotting
-# close all figures using close('all') 
+# close all figures using close('all')
 # make 3d plot
 fig3d = B.pl.figure()
 ax = fig3d.add_subplot(111, projection='3d')
@@ -184,4 +225,3 @@ ax21.set_xlabel('X')
 ax21.set_ylabel('Y')
 
 B.pl.show()
-
