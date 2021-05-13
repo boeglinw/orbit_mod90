@@ -1,6 +1,0 @@
-2021/02/15 09:13:01 [4860] building file list
-2021/02/15 09:13:01 [4860] rsync: link_stat "/Users/boeglinw/Documents/boeglin.1/Fusion/Fusion_Products/orbit_mod90/./Documents/." failed: No such file or directory (2)
-2021/02/15 09:13:01 [4860] done
-2021/02/15 09:13:01 [4860] sent 33 bytes  received 20 bytes  9.64 bytes/sec
-2021/02/15 09:13:01 [4860] total size is 0  speedup is 0.00
-2021/02/15 09:13:01 [4860] rsync error: some files could not be transferred (code 23) at /AppleInternal/BuildRoot/Library/Caches/com.apple.xbs/Sources/rsync/rsync-54.120.1/rsync/main.c(996) [sender=2.6.9]

@@ -17,5 +17,7 @@
 *.pyf
 *.so
 *.so.dSYM
+Untitled.*
 .DS_Store
 __pycache__
+.ipynb_checkpoints

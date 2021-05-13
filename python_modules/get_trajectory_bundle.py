@@ -9,9 +9,9 @@ usage example::
 
     >>> import numpy as np
     >>> import matplotlib.pyplot as pl
-    >>> import load_bundle as LB
+    >>> import get_trajectory_bundle as GTB
 
-    >>> b0 = LB.trajectory_bundle('../example_data/det_0_Channel0.npz')
+    >>> b0 = GTB.trajectory_bundle('../example_data/det_0_Channel0.npz')
 
     # loop over all trajectories and make ab r-z plot
 
@@ -36,11 +36,13 @@ class trajectory_bundle:
         Parameters
         ----------
         fname : String
-            file name.
+            file name containing the bundle. This should have been written by detectors.calc_trajectories
 
         Returns
         -------
         trajectory bundle object.
+
+        >>> b0 = GTB.trajectory_bundle('../example_data/det_0_Channel0.npz')
 
         """
         self.filename = fname
@@ -72,10 +74,12 @@ class trajectory_bundle:
         generator
             to loop over stored trajectories.
 
-        # loop over all trajectories and make ab r-z plot
+        loop over all trajectories and make ab r-z plot:
 
         >>> for tr in b0.trajectories():
                 x,y,z,r = tr
+                pl.plot(r,z)
+        >>> pl.gca().set_aspect('equal')
 
         """
         # generator for the trajectories in the bundle
@@ -113,7 +117,7 @@ class trajectory_bundle:
         Returns
         -------
         np.array
-            trajectory as np.array([x,y,z,r]).
+            trajectory number i as np.array([x,y,z,r]).
 
         """
         if i >= self.n_trajectories :
@@ -127,13 +131,13 @@ class trajectory_bundle:
 
         Parameters
         ----------
-        i : TYPE
-            DESCRIPTION.
+        i : int
+            trajectory number
 
         Returns
         -------
         np.array
-            B-field along trajectory.
+            B-field along trajectory number i
 
         """
         if i >= self.n_trajectories :
@@ -143,13 +147,19 @@ class trajectory_bundle:
 
     def __len__(self):
         """
-        return number of trajectories
+        return number of trajectories:
+
+        >>> len(b0)   # returns the number of trajectories in bundle b0
+
         """
         return self.n_trajectories
 
     def __getitem__(self,i):
         """
         return trajectory number i
+
+        >>> b0[i] # returns trajectory number i
+
         """
         return self.bundle[i]
 

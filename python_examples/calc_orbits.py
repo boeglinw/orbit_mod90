@@ -11,11 +11,20 @@ this code can be run from the command line or ipython:
 
     %run calc_orbits.py -c 'my_control.data' -P '/where/your/modules/are/located/'
 
+to run the example in this directory type
+
+    %run calc_orbits.py
+
+to get help on the arguments type
+
+    %run calc_orbits.py --help
+
 @author: boeglinw
 """
 
 
 import sys
+import os
 import argparse as AG
 
 import numpy as np
@@ -81,24 +90,26 @@ def plot_ring(rs, rl, ax, n = 50 , **kwargs ):
 #%% input section get comman line arguments
 parser = AG.ArgumentParser(formatter_class=AG.ArgumentDefaultsHelpFormatter)
 
+HERE = os.getcwd()
+
 parser.add_argument('-c', '--control_file', help="orbit calculation control file",
                     default = 'calc_orbit_control.data')
 parser.add_argument('-P', '--orbit_mod90_path', help="Path to orbit_mod90 python modules ( will be added to PYTHONPATH",
-                    default = '/Users/boeglinw/Documents/boeglin.1/Fusion/Fusion_Products/orbit_mod90/python_modules')
+                    default = HERE+'/../python_modules')
 
 # setup parser
 args = parser.parse_args()
 
 orbit_mod90_python = args.orbit_mod90_path
 
-#%% location of the python modules for orbit_mod90 
+#%% location of the python modules for orbit_mod90
 orbit_mod90_python = '/Users/boeglinw/Documents/boeglin.1/Fusion/Fusion_Products/orbit_mod90/python_modules'
 
 if (add_sys_path(orbit_mod90_python)) < 0 :
     print(f'Cannot add {orbit_mod90_python} to PYTHONPATH as it does not exist !')
     sys.exit(-1)
 
-
+# setup orbit specific modules
 # Tracking
 import Trpy as Tr
 
@@ -122,7 +133,7 @@ cd = pfile(args.control_file)
 dh = B.get_file(cd['detector_head'])
 
 
-#%%  set initial valuesfor tracker
+#%%  set initial values for tracker
 #
 Tr.tracker.particle_charge = cd.get_value('particle_charge')
 # Tr.tracker.particle_mass_amu = 1.007347

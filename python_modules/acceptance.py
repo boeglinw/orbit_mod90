@@ -5,6 +5,8 @@ Created on Tue Nov  3 13:09:35 2020
 
 acceptance calculations for reactangular and circular detector geometries
 
+these are analytical/numerical (not based on Fibonacci grids)
+
 @author: boeglinw
 """
 
@@ -53,8 +55,8 @@ def accept1d (xc, xd, d, xoff ):
     th2n = np.arctan(t_th2n)
     acc_x1 =  full_opening*(np.sin(th1p) - np.sin(th1n))
     acc_x2 =  (xc + xd + xoff)*(np.sin(th1n) - np.sin(th2n))
-    acc_x3 = -d*(np.cos(th1n) - np.cos(th2n)) 
-    acc_x4 =  (xc + xd - xoff)*(np.sin(th2p) - np.sin(th1p)) 
+    acc_x3 = -d*(np.cos(th1n) - np.cos(th2n))
+    acc_x4 =  (xc + xd - xoff)*(np.sin(th2p) - np.sin(th1p))
     acc_x5 =  d*(np.cos(th2p) - np.cos(th1p))
     accept =  acc_x1 + acc_x2 + acc_x3 + acc_x4 + acc_x5
     return accept
@@ -62,7 +64,7 @@ def accept1d (xc, xd, d, xoff ):
 # special case for a hole i.e. the two radii as identical
 def H_overlap(th, r,  d):
     """
-    Calculate the overlap area for a hole of radius r and depth d 
+    Calculate the overlap area for a hole of radius r and depth d
 
     Parameters
     ----------
@@ -197,7 +199,7 @@ class rect_detector:
         self.accept = self.a_x*self.a_y
 # all done
 #------------------------------------------------------------------------------
-# cylindrical collimator detector- system 
+# cylindrical collimator detector- system
 #------------------------------------------------------------------------------
 
 class cyl_detector:
@@ -221,13 +223,13 @@ class cyl_detector:
         self.d = d
         self.th_max = np.arctan(2.*self.r/self.d)
         self.accept =  self.calc_acceptance()
-    
+
     def calc_acceptance(self):
         self.f = lambda x: H_overlap(x, self.r, self.d)*np.sin(x)*np.cos(x)
         a_i = np.array(integrate.quad(self.f, 0., self.th_max)) * 2.*np.pi  # integrate of theta
         self.accept = a_i[0]
         self.daccept= a_i[1]
-        
+
 
 #------------------------------------------------------------------------------
 # conical collimator - detector system
@@ -258,11 +260,10 @@ class con_detector:
         self.D = dist   # distance collimator - detector
         self.th_max = np.arctan((self.c_r + self.d_r)/self.D)
         return
-    
+
     def calc_acceptance(self):
         self.f = lambda x: calc_overlap(self.c_r, self.d_r, self.D*np.tan(x))*np.sin(x)*np.cos(x)
-        a_i = np.array(integrate.quad(self.f, 0., self.th_max)) * 2.*np.pi 
+        a_i = np.array(integrate.quad(self.f, 0., self.th_max)) * 2.*np.pi
         self.accept = a_i[0]
         self.daccept = a_i[1]
 
-        
