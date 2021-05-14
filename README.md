@@ -18,14 +18,15 @@ The python modules are then created by doing (again in the root directory):
 
 ## Examples:
 In the directory *example_data* are data examples to explore and test the modules. The python modules are located in the *python_modules* directory.
-The following two main python examples are in the directory *python_examples*. 
+The following two main python examples are in the directory *python_examples*.
 
-- example_Trpy.py 
+- example_Trpy.py
 
-This program calculates trajectories in the equilibrium magnetic field starting at a certain initial position and velocity. 
+This program calculates trajectories in the equilibrium magnetic field starting at a certain initial position and velocity.
 
-- calc_orbits.py 
+- calc_orbits.py
 
 This is a more complete program that calculates orbit bundles for a set of cylindrical detectors. The necessary parameters are controlled by the *calc\_orbit\_control.data* file.
 
-All has been compiled with gfortran (GNU Fortran (GCC) 8.2.0) and f2py (Version: 2, numpy Version: 1.19.2)
+All has been compiled with *gfortran (GNU Fortran (GCC) 8.2.0)* and *f2py (Version: 2, numpy Version: 1.19.2)*
+Most of the example scripts require *LabTools3* which can be installed using *pip (pip install LabTools3)* or from GitHub: *https://github.com/boeglinw/LabTools3.git*

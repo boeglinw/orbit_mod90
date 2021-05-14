@@ -28,7 +28,8 @@ import os
 import argparse as AG
 
 import numpy as np
-import LT.box as B
+
+import LT.box as B   # this library can be installed using: pip install LabTools3 or cloned from GitHub: https://github.com/boeglinw/LabTools3.git
 from LT.parameterfile import pfile
 
 # colored trajectories
