@@ -98,6 +98,8 @@ parser.add_argument('-c', '--control_file', help="orbit calculation control file
 parser.add_argument('-P', '--orbit_mod90_path', help="Path to orbit_mod90 python modules ( will be added to PYTHONPATH",
                     default = HERE+'/../python_modules')
 
+parser.add_argument('-n','--no_plot', action='store_true')
+
 # setup parser
 args = parser.parse_args()
 
@@ -153,12 +155,19 @@ Tr.tracker.set_gfile_name(cd.get_value('gfile_name'))
 Tr.tracker.set_efit_directory(cd.get_value('efit_directory'))
 
 
-# Control trajectory bundle calculation
+#%% Control trajectory bundle calculation
+trajectory_bundle_type = cd.get_value('bundle_type')
 # number of fibonacci positions in detector area
-N_pos_det = cd.get_value('number_of_fib_points')
+N_pos_det = cd.get_value('number_of_detector_points')
 # number of fibonacci points for direction
-N_dir_det = cd.get_value('number_of_fib_directions')
+N_dir_det = cd.get_value('number_of_directions')
+# set collimaor at z = 0 for track
+zero_at_collimator = cd.get_value('zero_at_collimator')
+# scale factor for fibonacci angle grid
+fib_angle_scale = cd.get_value('fib_angle_scale')
 
+# ingore b-field
+ignore_detector_bfield = cd.get_value('ignore_detector_bfield')
 
 #%% initialize tracker: allocate space for trajectory data in BT.tracker.trajectory
 #
@@ -192,13 +201,17 @@ detector_head = []
 for i,n  in enumerate(dh['Detector_number']):
     det_l = Det.detector(n,
                         dh['Detector_name'][i],
-                        position = np.array([R_p, Z_p, Phi_p]),
-                        pos_local = np.array([dh['xd'][i], dh['yd'][i], dh['zd'][i]]),
-                        direction = np.array([dh['theta_d'][i]*dtr, dh['phi_d'][i]*dtr]),
-                        rotation = arm_rotation,
+                        head_position = np.array([R_p, Z_p, Phi_p]),
+                        det_pos_local = np.array([dh['xd'][i], dh['yd'][i], dh['zd'][i]]),
+                        det_direction = np.array([dh['theta_d'][i]*dtr, dh['phi_d'][i]*dtr]),
+                        arm_rotation = arm_rotation,
                         tracker = Tr,
                         bundle_fname = f'det_{n}_'+dh['Detector_name'][i]+'.npz',
-                        color = dh['color'][i])
+                        color = dh['color'][i],
+                        R_det = dh.par['R_det'], R_coll = dh.par['R_coll'], R_cyl = dh.par['R_cyl'], D = dh.par['D'],
+                        zero_at_coll = zero_at_collimator,
+                        fib_scale = fib_angle_scale,
+                        ignore_detector_field = ignore_detector_bfield)
     detector_head.append(det_l)
 # initialize
 for det_l in detector_head:
@@ -206,8 +219,11 @@ for det_l in detector_head:
 
 # calculate trajectories
 for det_l in detector_head:
-    det_l.calc_trajectories()
+    det_l.calc_trajectories(bundle_type = trajectory_bundle_type)
+    det_l.calc_central()
 
+if args.no_plot:
+    sys.exit()
 #%% prepare to plot the plasma
 # get the boundary data
 nbdry = Tr.flux_par_mod.nbdry
@@ -239,60 +255,78 @@ rrg,zzg = np.meshgrid(rg, zg)
 
 
 #%% Plotting
-# close all figures using close('all')
-# make 3d plot
-fig3d = B.pl.figure()
-ax = fig3d.add_subplot(111, projection='3d')
-ax.plot_surface(XX, YY, ZZ, color = 'r', alpha = 0.2)
-
-# plot all  in det_l
-for dd in detector_head:
-    for b in dd.bundle:
-        x = b[0]
-        y = b[1]
-        z = b[2]
-        B.pl.plot(x,y,z, color = color_table[dd.color])
-# B.pl.plot(xpz,ypz,zpz, color = 'g')
-
-ax.set_xlabel('X')
-ax.set_ylabel('Y')
-ax.set_zlabel('Z')
+def plot_plasma3D(central = False):
+    # close all figures using close('all')
+    # make 3d plot
+    fig3d = B.pl.figure()
+    ax = fig3d.add_subplot(111, projection='3d')
+    ax.plot_surface(XX, YY, ZZ, color = 'r', alpha = 0.2)
+    # plot all  in det_l
+    for dd in detector_head:
+        if central:
+            x = dd.central_track.T[0]
+            y = dd.central_track.T[1]
+            z = dd.central_track.T[2]
+            B.pl.plot(x,y,z, color = color_table[dd.color])
+        else:
+            for b in dd.bundle:
+                x = b.T[0]
+                y = b.T[1]
+                z = b.T[2]
+                B.pl.plot(x,y,z, color = color_table[dd.color])
+    # B.pl.plot(xpz,ypz,zpz, color = 'g')
+    
+    ax.set_xlabel('X')
+    ax.set_ylabel('Y')
+    ax.set_zlabel('Z')
 
 
 #%% RZ plot
-fig_rz = B.pl.figure()
-limiter.draw_side_all()
-
-# draw the flux
-B.pl.contour(rrg,zzg, psi, levels = 40)
-
-# draw the plasma
-B.pl.plot(rbdry, zbdry, color = 'r')
-
-# plot all  in det_l
-for dd in detector_head:
-    for b in dd.bundle:
-        r = b[3]
-        z = b[2]
-        B.pl.plot(r,z, color = color_table[dd.color])
-B.pl.ylim((-2.,2.))
-B.pl.xlim((0.,2.))
+def plot_plasma_rz(central = False):
+    fig_rz = B.pl.figure()
+    limiter.draw_side_all()
+    
+    # draw the flux
+    B.pl.contour(rrg,zzg, psi, levels = 40)
+    
+    # draw the plasma
+    B.pl.plot(rbdry, zbdry, color = 'r')
+    
+    # plot all  in detector_head:
+    for dd in detector_head:
+        if central:
+            r = dd.central_track.T[3]
+            z = dd.central_track.T[2]
+            B.pl.plot(r,z, color = color_table[dd.color])
+        else:            
+            for i,b in enumerate(dd.bundle):
+                r = b.T[3]
+                z = b.T[2]
+                B.pl.plot(r,z, color = color_table[dd.color])
+    B.pl.ylim((-2.,2.))
+    B.pl.xlim((0.,2.))
 
 
 #%% midplane plot
-fig_mid = B.pl.figure()
-limiter.draw_top_all()
-
-# draw the plasma
-plot_ring(r_plasma_min, r_plasma_max, B.pl.gca(), color = 'r', alpha = 0.2, edgecolor = None)
-
-# plot all  in det_l
-for dd in detector_head:
-    for b in dd.bundle:
-        x = b[0]
-        y = b[1]
-        B.pl.plot(x,y, color = color_table[dd.color])
-B.pl.ylim((-2.,2.))
-B.pl.xlim((-2.,2.))
-
-B.pl.show()
+def plot_plasma_mid(central = False):
+    fig_mid = B.pl.figure()
+    limiter.draw_top_all()
+    
+    # draw the plasma
+    plot_ring(r_plasma_min, r_plasma_max, B.pl.gca(), color = 'r', alpha = 0.2, edgecolor = None)
+    
+    # plot all  in det_l
+    for dd in detector_head:
+        if central:
+            x = dd.central_track.T[0]
+            y = dd.central_track.T[1]
+            B.pl.plot(x,y, color = color_table[dd.color])
+        else:               
+            for b in dd.bundle:
+                x = b.T[0]
+                y = b.T[1]
+                B.pl.plot(x,y, color = color_table[dd.color])
+    B.pl.ylim((-2.,2.))
+    B.pl.xlim((-2.,2.))
+    
+    B.pl.show()

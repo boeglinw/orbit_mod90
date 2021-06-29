@@ -10,22 +10,7 @@ and direction using Fibonacci grids on circle and sphere
 
 Evective acceptance values per trajectory are also calculated
 
-The magnetic field between detector and collimator is assumed to be constant.
-
-The detector-collimator system is assumed to consist of a cylinder with a hole at the beginning
-the size of the detector area and a hole at the end the size of the collimator. If both are the same size
-as the cylinder the collimator is simply a drilled hole.
-
-
-|-------------------------------------------|
-|                                           |
-                         R_cyl              |
-R_det                                       R_coll  
-                                            
-                                            |
-|                                           |
-|-------------------------------------------|
-
+THe magnetic field between detector and collimator is assumed to be constant.
 
 @author: boeglinw
 """
@@ -34,9 +19,6 @@ import numpy as np
 
 # generate fibonacci grids
 import fibonacci as FI
-
-# acceptance calculations
-import acceptance_array as AA
 
 # calc culate trjectories in constant fields
 import BorisCylpy as BC
@@ -59,7 +41,7 @@ class bundle:
                  m_me = 1836.152,
                  q_ec = 1.,
                  Bf = np.array([0., 0., 0.]),
-                 R_det = .001, R_coll = .001, D = .05, R_cyl = 0.001,
+                 R_det = .001, R_coll = .001, D = .05,
                  Ef = np.array([0., 0., 0.]),
                  scale = 1.,
                  z_zero = False):
@@ -99,9 +81,6 @@ class bundle:
 
         R_coll : float, optional
             collimator radis. The default is .001.
-            
-        R_cyl : float, optional
-            cylinder radius joining detector and collimaotr 
 
         D : float, optional
             distance detector-collimator. The default is .05.
@@ -113,7 +92,7 @@ class bundle:
             scale factor to increase maximal polar direction angle. The default is 1.
 
         z_zero: bool, optional
-            set z-coordinate of final position to 0. This is useful if detector positions are referring to collimator position. The default is False
+            set z-coordinate of final position to 0. This is usefule of detector positions are referring to collimator position. The default is False
 
         Returns
         -------
@@ -130,7 +109,6 @@ class bundle:
         self.Ef = Ef
         self.R_det = R_det
         self.R_coll = R_coll
-        self.R_cyl = R_cyl
         self.D = D
         self.scale = scale
         # additional number of boris steps to make sure the entire length of the detector
@@ -168,20 +146,8 @@ class bundle:
         # solid angle per point
         self.dA_dir = self.A_dir/self.N_dir
         self.phi_dir, self.theta_dir =  fg.get_sphere(0., self.th_max, N = self.N_dir)
-        
-    def calc_bundle(self, stop = True, bundle_type = 'full'):
-        # calculate selected bundle type
-        if bundle_type == 'full':
-            self.calc_full_bundle(stop = stop)
-        elif bundle_type == 'square':
-            self.calc_square_bundle()
-        elif bundle_type == 'round':
-            self.calc_round_bundle()
-        else:
-            print(f'Unknown bundle type : {bundle_type}, nothing calculated !')
-        return
 
-    def calc_full_bundle(self, stop = True):
+    def calc_bundle(self, stop = True):
         # initialize arrays
         results = []
         t_det = []
@@ -190,7 +156,7 @@ class bundle:
         # calculate trajectories
         #  stop when wall is hit
         BC.boris_cylinder.stop_at_hits = stop
-        # calculate trajectory for each position and each direction
+        # calculate trajectory for reach position and each direction
         start_time = timeit.default_timer()
         for i,rr in enumerate(self.r_init):
             # initial position
@@ -210,16 +176,18 @@ class bundle:
                 # of the detector
                 #
                 step_l = self.step/np.cos(thv)
-                BC.boris_cylinder.init(self.q_ec, self.m_me, self.R_cyl, self.R_coll, self.D, step_l, Nstep_l, vs )
+                BC.boris_cylinder.init(self.q_ec, self.m_me, self.R_det, self.R_coll, self.D, step_l, Nstep_l, vs )
                 # calc trajectory
                 nc = BC.boris_cylinder.track_cylinder(rs)
                 # save results
                 tr = CO.copy(BC.boris_cylinder.track[:,:])
                 # get initial and final values
                 # select only parts inside the system
+
                 sel = tr[:,2]<= self.D
                 t_init = tr[sel][0]
                 t_final = tr[sel][-1]
+
                 if self.save_track:
                     results.append(tr)  # save position and  velocities
                 else:
@@ -278,93 +246,6 @@ class bundle:
         # using initial values
         self.Acci = np.sum(self.dAcci)
 
-
-    def calc_square_bundle(self):
-        """
-        Make a trajectory bundle with square collimator and detector. The area of the square is the same
-        as the area of a circle with the given radius
-    
-        Returns
-        -------
-        None.
-    
-        """
-        s_det = np.sqrt(np.pi*self.R_det**2)/2.
-        s_col = np.sqrt(np.pi*self.R_coll**2)/2.
-        # make detector grid
-        # N_pos = numner of detecor grid points
-        # N_dir = number of collimator grid points
-        dx_d = s_det/self.N_pos
-        dx_c = s_col/self.N_dir
-        # 1d grid positions 
-        x_d = (np.arange(self.N_pos) + 0.5)*dx_d - s_det
-        y_d = x_d
-        x_c = (np.arange(self.N_dir) + 0.5)*dx_c - s_col
-        y_c = x_c
-        # detector grid positions
-        xxd, yyd = np.meshgrid(x_d, y_d)
-        # collimator grid positions
-        xxc, yyc = np.meshgrid(x_c, y_c)
-        # detector collimator combinations
-        XD,XC = np.meshgrid(xxd.flatten(), xxc.flatten())
-        xd = XD.flatten(); xc = XC.flatten()
-        YD,YC = np.meshgrid(yyd.flatten(), yyc.flatten())
-        yd = YD.flatten(); yc = YC.flatten()
-        # calculate trajectories
-        zc = np.ones_like(xd)*self.D
-        vx = xc - xd
-        vy = yc - yd
-        vz = zc
-        #
-        V = np.array([vx,vy,vz])
-        v_mag = np.apply_along_axis(np.linalg.norm, 0, V)
-        # velocity unit vectors
-        uv = V/v_mag
-        # initial positions
-        self.r_coll = (np.array([xc, yc, np.zeros_like(xc)])).T
-        # initical velocity
-        self.v_coll = (uv*self.v).T
-        # calc acceptance
-        acc_x = AA.accept1d(s_col/self.N_dir, s_det/self.N_pos, self.D, (xd - xc))
-        acc_y = AA.accept1d(s_col/self.N_dir, s_det/self.N_pos, self.D, (yd - yc))
-        self.dAcc = acc_x*acc_y
-        self.ratio = 1.
-        
-
-    def calc_round_bundle(self):
-        """
-        Make a trajectory bundle with round collimator and detector. Using a fibonacci grid for the angles.
-    
-        Returns
-        -------
-        None.
-    
-        """
-        fg = FI.fibonacci_grid(self.N_dir)
-        
-        # largest possible angle
-        th_max = np.arctan((self.R_det + self.R_coll)/self.D)
-        
-        # total solid angle
-        A = 2.*np.pi*(1. - np.cos(th_max))
-        # solid angle per point
-        dA = A/self.N_dir
-        
-        phi, theta = fg.get_sphere(0., th_max)
-        # initial directions
-        xp = np.cos(phi)*np.sin(theta)
-        yp = np.sin(phi)*np.sin(theta)
-        zp = np.cos(theta)
-        # velocity unit vector
-        self.v_coll = (np.array([xp, yp, zp])*self.v).T
-        # collimator positions
-        xc = np.zeros_like(xp)
-        self.r_coll = (np.array([xc, xc, xc])).T
-        # calculate overlapp
-        over = AA.C_overlap(theta, self.R_coll, self.R_det, self.D)
-        # acceptance per trajectory
-        self.dAcc = over*np.cos(theta)*dA
-        self.ratio = 1.
 
     def get_bundle(self):
         """

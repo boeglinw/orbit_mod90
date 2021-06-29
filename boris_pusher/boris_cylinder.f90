@@ -91,9 +91,9 @@ contains
     real(kind = 8) :: R_c
 
     ! store input parameters
-    q = qv
-    m = mv
-    q_over_m = q/m
+    q = qv  ! in ec
+    m = mv  ! in me
+    q_over_m = q/m*em_ratio
 
     R = Rv
     C_r = Crv

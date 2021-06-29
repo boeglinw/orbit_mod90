@@ -25,12 +25,23 @@ track_length = 6.
 step_size = 0.01
 time_reversed = True
 
-# setup number of fibonacci points for the trajectory bundles
+# ------------- Trajectory Bundls 
 
-# the total number of trajectories =  number_of_fib_points * number_of_fib_directions
+# the total number of trajectories =  number_of_detector_points * number_of_directions: for full bundle
+#                                     number_of_detector_points**2 * number_of_directions**2 : for square
+#                                     number of_directions: for round bundle
 
-number_of_fib_points = 10
-number_of_fib_directions = 50
+# bundle type possibilities: full, square, round
+
+bundle_type = square
+
+number_of_detector_points = 5
+number_of_directions = 5
+
+zero_at_collimator = True
+fib_angle_scale = 1.
+
+ignore_detector_bfield = False
 
 # fast version
 selected_tracker = Boris

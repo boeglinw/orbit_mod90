@@ -231,8 +231,8 @@ subroutine read_eqdsk(fname,imfit,ier)
   ! store local variables in final variables
   simag=ssimag
   psibry=ssibry
-  sifm=simag
-  sifb=psibry
+  psi_axis = simag
+  psi_bdry = psibry
   
   ! psirz: Poloidal flux in Weber / rad on the rectangular grid points
   ! store in a 1d array psi

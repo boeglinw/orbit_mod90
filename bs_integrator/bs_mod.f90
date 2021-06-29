@@ -151,14 +151,14 @@ contains
     ! this function needs to be provided
 
     ! interface to the global (user supplied and linked) B-field routine mag_field
-    ! bfield returns vector bf ( bpolr, bpolz, bphi, btotal)
+    ! bfield returns vector bf = ( bpolr, bpolz, bphi, btotal, psi_rel)
     integer(kind = 4), intent(in) :: n
     real(kind = 8), intent(in) :: t
     real(kind = 8), dimension(n), intent(in) :: rv
     real(kind = 8), dimension(n), intent(out) :: rvpr
 
     ! local field
-    real(kind = 8), dimension(4) :: bo, bf
+    real(kind = 8), dimension(5) :: bo, bf
     real(kind = 8), dimension(4) :: r ! position
 
     ! assignment

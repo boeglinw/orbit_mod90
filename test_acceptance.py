@@ -4,7 +4,7 @@
 Created on Mon Nov 30 16:08:24 2020
 
 
-Test acceptance calculations using various methods
+Test acceptance calculation s
 
 @author: boeglinw
 """
@@ -72,11 +72,10 @@ Rc = 0.002
 Rd = 0.003
 
 Ah = np.pi*Rh**2
-Ad = np.pi*Rd**2
 
 # rectangular collimator
 C_s = np.sqrt(Ah)/2.  # coll. half width
-D_s = np.sqrt(Ad)/2.  # det. half width
+D_s = np.sqrt(Ah)/2.  # det. half width
 
 
 # square detector
@@ -118,15 +117,15 @@ phi_mc = np.random.uniform(low = 0., high = 2.*np.pi, size = N_events)
 # Full solid angle
 delta_omega_mc = 2.*np.pi*(1. - cth_max_mc)
 # calculate overlap
-Ov_mc = AA.H_overlap(th_mc, Rh, D)*np.cos(th_mc)*A
+Ov_mc = AA.H_overlap(th_mc, Rh, D)*np.cos(th_mc)
 # acceptance
 Ac = np.sum(Ov_mc)*delta_omega_mc/N_events
 
 print(f'ratio = {Ac/h_D.accept}')
 
+print (f'geometrical acceptance ratio = ')
 
 #%% plot
-"""
 xp = np.cos(phi_mc)*np.sin(th_mc)
 yp = np.sin(phi_mc)*np.sin(th_mc)
 zp = np.cos(th_mc)
@@ -200,7 +199,7 @@ accept_t = AA.integrate.simps(theta_integral, ph)
 
 print(f'ratio sub = {accept_t/hc.accept}')
 
-"""
+
 #%% uniformly distributed points Fibonacci Grid
 
 num_pts = 2000
@@ -210,8 +209,8 @@ fg = FI.fibonacci_grid(num_pts)
 #arg = 1 - 2*indices/num_pts
 
 # largest angle
-th_max = np.arctan((Rd + Rc)/D)
-#th_max = np.arctan((Rh + Rh)/D)
+#th_max = np.arctan((Rd + Rc)/D)
+th_max = np.arctan((Rh + Rh)/D)
 
 # total solid angle
 A = 2.*np.pi*(1. - np.cos(th_max))
@@ -226,55 +225,23 @@ yp = np.sin(phi)*np.sin(theta)
 zp = np.cos(theta)
 
 
-over = AA.C_overlap(theta, Rc, Rd, D)
-#over = AA.C_overlap(theta, Rh, Rh, D)
+# over = AA.C_overlap(theta, Rc, Rd, D)
+over = AA.C_overlap(theta, Rh, Rh, D)
 
 acc_a = over*np.cos(theta)*dA
 
 accept_f = acc_a.sum()
 
-print(f'ratio = {accept_f/h_c1.accept}')
-#print(f'ratio = {accept_f/h_c.accept}')
+print(f'ratio = {accept_f/h_c.accept}')
 
 #%% sunflower
 # simple version: see https://demonstrations.wolfram.com/SunflowerSeedArrangements/
 #
 
-Nr = 10
-r, th = fg.get_circle(Rd, N = Nr)
-dA_r = np.pi*Rd**2/Nr
+Nr = 50
+r, th = fg.get_circle(Rh, N = Nr)
+dA_r = np.pi*Rh**2/Nr
 
-
-#%%
-def calc_t(r, th, thd, phd, d):
-    r0 = np.array([r*np.cos(th), r*np.sin(th), np.zeros_like(r)])
-    uv = np.array([np.cos(phd)*np.sin(thd), np.sin(phd)*np.sin(thd), np.cos(thd)])
-    l_t = d/np.cos(thd)
-    return (uv*l_t+r0.T).T
-
-#%% calcula acceptance using above function
-over_a = []
-xt_a = []; yt_a = []; zt_a = []; th_a = []
-for j, theta_s in enumerate(theta): 
-    phi_s = phi[j]
-    xt, yt, zt = calc_t(r, th, theta_s, phi_s, D)
-    sel = (xt**2 + yt**2) <= Rc**2
-    xt_a += list(xt[sel]) 
-    yt_a += list(yt[sel])
-    zt_a += list(zt[sel])
-    th_a += list(np.ones_like(xt[sel])*theta_s)
-xt_a = np.array(xt_a)
-yt_a = np.array(yt_a)
-zt_a = np.array(zt_a)
-th_a = np.array(th_a)
-cth = np.cos(th_a)
-acc_af = np.sum(cth*dA*dA_r)
-accept_af = acc_af.sum()
-
-print(f'ratio = {accept_af/h_c1.accept}')
-
-
-#%%
 # modified version from https://stackoverflow.com/questions/28567166/uniformly-distribute-x-points-inside-a-circle
 
 #%% straight trajectory
@@ -290,14 +257,11 @@ def calc_straight(r, th, ph , Ns, d):
     t = np.dot(ls, uvs) + r
     return t
 
-def R_z(z):
-    # colincal hole
-    return (Rc - Rd)/D*z + Rd
 
 #%%  straight trajectories
-Nt = 10   # number of steps in straight section
+Nt = 50   # number of steps in straight section
 tracks = []
-hitsm = []
+hits = []
 theta_t = []
 # loop over all positions and directions
 for i, r_r in enumerate(r):
@@ -306,26 +270,25 @@ for i, r_r in enumerate(r):
     for j, theta_s in enumerate(theta): 
         phi_s = phi[j]
         tr = calc_straight(r0, theta_s, phi_s, Nt, D)
-        xt = tr.T[0]; yt = tr.T[1]; zt = tr.T[2]
-        rt = np.sqrt(xt**2 + yt**2)
-        hitm = (rt>R_z(zt)).max()
+        rt = np.sqrt(tr[:,0]**2 + tr[:,1]**2)
+        hit = (rt>Rh).max()
         tracks.append(tr)
-        hitsm.append(hitm)
+        hits.append(hit)
         theta_t.append(theta_s)
         
 tracks = np.array(tracks)
-hits = np.array(hitsm)
+hits = np.array(hits)
 theta_t = np.array(theta_t)
-#%% estimate solid angle
+# estimate solid angle
 
-cth_t = np.cos(theta_t[~hits])
+cth = np.cos(theta_t[~hits])
 
-Acc = np.sum(cth_t)*dA_r*dA
+Acc = np.sum(cth)*dA_r*dA
 
 
 Ratio = Acc/h_c.accept
 
-print(f'Ratio = {Acc/h_c1.accept}')
+print(f'Ratio = {Acc/h_c.accept}')
 
 #%% calculate trajectory in constant B- field in y-direction
 @jit(nopython=True)

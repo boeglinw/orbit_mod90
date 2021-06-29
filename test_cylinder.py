@@ -32,7 +32,6 @@ K = 3*C.mev
 
 # velocity
 v = np.sqrt(2.*K/C.mp)
-p_mp = C.mp*v
 
 """+
 thv = 0.*dtr
@@ -46,8 +45,8 @@ rs = np.array([-0.0,0.,0.])
 """
 Nt = 50   # number of steps in straight section
 
-R = 0.0019
-d = 0.0357
+R = 0.002
+d = 0.05
 step = d/Nt
 
 
@@ -60,14 +59,11 @@ th_max = np.arctan(2.*R/d)*1.
 # th_max = np.pi/2.5
 
 # set  B-field
-#Bmag = 0.3
+#Bmag = 0.2
 Bmag = 0.
 
 theta_b = 90*dtr
 phi_b = 0.*dtr
-
-# gyro radoius
-#R_g = p_mp/(C.ec*Bmag)
 
 # magnetic field direction in detector system
 Bv = np.array([np.cos(phi_b)*np.sin(theta_b), np.sin(phi_b)*np.sin(theta_b), np.cos(theta_b)])*Bmag
@@ -78,12 +74,12 @@ BC.boris_cylinder.set_b0(Bv)
 
 
 # sunflower r theta distribution for initial position
-np_pos= 20 # set the number of points
+np_pos= 50 # set the number of points
 r_init, th = fg.get_circle(R, N = np_pos)
 dA_pos = np.pi/np_pos * R**2
 
 # sunflower for directions
-np_dir = 200
+np_dir = 100
 # total solid angle
 A_dir = 2.*np.pi*(1. - np.cos(th_max))
 # solid angle per point
@@ -92,7 +88,7 @@ phi, theta =  fg.get_sphere(0., th_max, N = np_dir)
 
 
 
-#%% setup result arrays and
+#%% setup result arrays
 
 theta_ac = []
 results = []
@@ -100,7 +96,7 @@ hits = []
 hits_c = []
 ncalc = []
 
-
+#%% calculate trajectories
 #  stop when wall is hit
 BC.boris_cylinder.stop_at_hits = False
 # calculate trajectory for reach position and each direction
@@ -123,7 +119,7 @@ for i,rr in enumerate(r_init):
         # of the detector
         # 
         step_l = step/np.cos(thv)
-        BC.boris_cylinder.init(1., C.mp/C.me, R, R, d, step_l, Nstep_l, vs )
+        BC.boris_cylinder.init(1., 1836.152, R, R, d, step_l, Nstep_l, vs )
         # calc trajectory
         theta_ac.append(thv)
         nc = BC.boris_cylinder.track_cylinder(rs)
@@ -152,7 +148,7 @@ ok = ~hits
 
 # fraction of tracks that hit wall
 ratio = np.count_nonzero(ok)/hits.shape[0]
-
++
 print(f'passing fraction = {ratio:.3f}')
 
 # calculate acceptance for the passed paricles
@@ -193,7 +189,51 @@ Ratio = Acc/h_c.accept
 print(f'Ratio = {Acc/h_c.accept}')
 
 
-"""
+#%% straight trajectory
+@jit(nopython=True)
+def calc_straight(r, th, ph , Ns, dl):
+    dz = dl/Ns
+    uv = np.array([np.cos(ph)*np.sin(th), np.sin(ph)*np.sin(th), np.cos(th)])
+    args = np.arange(Ns + 1)
+    z = args*dz
+    l = z/np.cos(th)
+    ls = l.reshape((l.shape[0],1))
+    uvs = uv.reshape((1, uv.shape[0]))
+    t = np.dot(ls, uvs) + r
+    return t
+
+
+#%%  straight trajectories
+
+tracks = []
+hits = []
+theta_t = []
+# loop over all positions and directions
+for i, r_r in enumerate(r_init):
+    th_r = th[i] 
+    r0 = np.array([r_r*np.cos(th_r), r_r*np.sin(th_r), 0.])
+    for j, theta_s in enumerate(theta): 
+        phi_s = phi[j]
+        tr = calc_straight(r0, theta_s, phi_s, Nt, d)
+        rt = np.sqrt(tr[:,0]**2 + tr[:,1]**2)
+        hit = (rt>R).max()
+        tracks.append(tr)
+        hits.append(hit)
+        theta_t.append(theta_s)
+        
+tracks = np.array(tracks)
+hits_s = np.array(hits)
+theta_t = np.array(theta_t)
+# estimate solid angle
+
+cth_s = np.cos(theta_t[~hits_s])
+
+Acc_s = np.sum(cth_s)*dA_pos*dA_dir
+
+
+Ratio_s = Acc_s/h_c.accept
+
+print(f'Ratio = {Acc_s/h_c.accept}')
 #%% plot inital and final positions
 pl.figure()
 for i,rr in enumerate(r_initial):
@@ -216,14 +256,12 @@ for i,res in enumerate(results):
         pl.plot(res[:,0][ncalc[i]-1:ncalc[i]], res[:,1][ncalc[i]-1:ncalc[i]],'.',  color = 'b')
 
 pl.gca().set_aspect('equal')
-
 #%% same as above but as a function of z
 pl.figure()
 for i,res in enumerate(results):
     if hits[i] :
-        pl.plot(res[:,0][:ncalc[i]], res[:,2][:ncalc[i]], color = 'r', alpha = 0.2)
+        pl.plot(res[:,0][:ncalc[i]], res[:,2][:ncalc[i]], color = 'r')
     else:
         pl.plot(res[:,0], res[:,2], color = 'b')
 
 pl.gca().set_aspect('equal')
-"""

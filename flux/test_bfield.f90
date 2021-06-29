@@ -16,7 +16,7 @@ program test_bfield
   real(kind = 8) :: rr, zz, phi
 
   ! field vector
-  real(kind = 8), dimension(4):: b_vect
+  real(kind = 8), dimension(5):: b_vect
 
    ! get the flux data
 
@@ -30,7 +30,8 @@ program test_bfield
      print *, ' r = ', rr, ', z = ', zz
      b_vect = bfield(rr, zz)
      print *, 'field vector : ', b_vect(1), b_vect(2),  b_vect(3)
-     print *, ' magnitude : ', b_vect(4)
+     print *, 'magnitude : ', b_vect(4)
+     print *, 'relative flux : ', b_vect(5)
   enddo
      
 end program test_bfield

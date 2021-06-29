@@ -9,12 +9,13 @@ function bfield (r_loc, z_loc)  result(bf)
   !           r_loc.........r-position (input)
   !           z_loc.........z-position (input)
   !
-  !           bf( bpolr, bpolz, bphi, btotal) (output)
+  !           bf( bpolr, bpolz, bphi, btotal,xsi) (output)
   !
   !           bpolr........r-Bfield component 
   !           bpolz........z-Bfield component 
   !           bphi.........phi-Bfield component
-  !           btotal........Bfield magnitude 
+  !           btotal........Bfield magnitude
+  !           psi_rel.......relative flux 
   !                                                                  
   !     REFERENCES:                                                  
   !          (1)                                                     
@@ -40,7 +41,7 @@ function bfield (r_loc, z_loc)  result(bf)
   real(kind = 8), intent(in) :: r_loc, z_loc
 
   ! magnetic field in toroidal coord. system
-  real(kind = 8), dimension(4)  :: bf
+  real(kind = 8), dimension(5)  :: bf
 
   
   ! interpolation function
@@ -58,7 +59,7 @@ function bfield (r_loc, z_loc)  result(bf)
   ! magnitude
   real(kind = 8) :: btotal
   
-  real(kind = 8) :: xsinow
+  real(kind = 8) :: psi_rel
   real(kind = 8) :: bpol, fpnow
 
   ! local value of flux and its derivatives (from interpolation)
@@ -114,10 +115,10 @@ function bfield (r_loc, z_loc)  result(bf)
   ! calculate relative flux, interpolated value is stored in pds(1)
   ! sifb and sifm are from read_eqdsk
   
-  if (abs (sifb - sifm) .gt.1.e-8) then  
-     xsinow = (psi_loc - sifm) / (sifb - sifm)  
+  if (abs (psi_bdry - psi_axis) .gt.1.e-8) then  
+     psi_rel = (psi_loc - psi_axis) / (psi_bdry - psi_axis)  
   else  
-     xsinow = 1.2       
+     psi_rel = 1.2       
   endif
 
   !     Check to see whether sample point is inside limiter region
@@ -128,14 +129,13 @@ function bfield (r_loc, z_loc)  result(bf)
   if (debug) then
      print *, 'in close flux surface = ', in_closed_flux_surface
      print *, 'plasma current = ', current
-     print *, 'relative flux = ', xsinow
+     print *, 'relative flux = ', psi_rel
   endif
   
   if (abs (current) .gt.10.) then       
-     if ( in_closed_flux_surface .and. (xsinow .le. 1.) ) then  
-        !     take this branch if inside limiter and psi small enough i.e. inside plasma boundary
-        fpnow = seval(mwfpol, xsinow, xxxsi, fpol, bfpol, cfpol, dfpol)
-        ! fpnow = spline_eval(mwfpol, xsinow, xxxsi, fpol, bfpol, cfpol, dfpol)
+     if ( in_closed_flux_surface .and. (psi_rel .le. 1.) ) then  
+        !  inside limiter and psi small enough i.e. inside plasma boundary
+        fpnow = seval(mwfpol, psi_rel, xxxsi, fpol, bfpol, cfpol, dfpol)
      else  
         fpnow = fpol (mwfpol)  
      endif
@@ -156,6 +156,7 @@ function bfield (r_loc, z_loc)  result(bf)
   bf(2) = bpolz
   bf(3) = bphi
   bf(4) = btotal
+  bf(5) = psi_rel
   
   return  
   

@@ -9,6 +9,7 @@ Created on Mon Jun  8 15:55:58 2020
 import numpy as np
 import LT.box as B
 import time
+import sys
 
 import copy as C
 
@@ -82,6 +83,7 @@ td = B.get_file(track_dir + track_name)
 rt = td['r']
 phit = td['phi']
 zt = td['z']
+psirel = td['psirel']
 xt = rt*np.cos(phit)
 yt = rt*np.sin(phit)
 
@@ -154,14 +156,15 @@ v0 = Tr.tracker.vmag*uv0
 #%%
 t_start = time.time()  # for timing
 # numer of trajectories
-n_traj = 10
+n_traj = 1
 # store results in bundle
 bundle = []
 for i in range(n_traj):
     # select a small random offset
-    xr,yr = get_random_point(.05)
-    dv = np.matmul(R_tot, np.array([xr, yr, 0.]) ) * Tr.tracker.vmag
-    vi = v0 + dv
+    #xr,yr = get_random_point(.05)
+    #dv = np.matmul(R_tot, np.array([xr, yr, 0.]) ) * Tr.tracker.vmag
+    #vi = v0 + dv
+    vi = v0
     # calculate track result is in Tt.tracker.trajectory array
     nc = Tr.tracker.get_trajectory(r0, vi )
     print ('trajectory contains ', nc, ' steps' )
@@ -170,8 +173,10 @@ for i in range(n_traj):
     y = C.copy(Tr.tracker.trajectory[:nc-1,1])
     z = C.copy(Tr.tracker.trajectory[:nc-1,2])
     r = np.sqrt(x**2 + y**2)
-
-    bundle.append((x, y, z, r))  # store trajectory information in a bundle
+    bf = np.array([Tr.em_fields_mod.bfield(rr,zz) for rr,zz in zip(r,z)])
+    # combined data
+    a = np.concatenate([(np.stack([x,y,z,r])).T, bf], axis = 1)
+    bundle.append(a)  # store trajectory information in a bundle
 # all done
 t_end = time.time()
 print("Time used for ", n_traj, " tracks = ", t_end - t_start)
@@ -188,9 +193,9 @@ fig3d = B.pl.figure()
 ax = fig3d.add_subplot(111, projection='3d')
 
 for b in bundle:
-    x = b[0]
-    y = b[1]
-    z = b[2]
+    x = b[:,0]
+    y = b[:,1]
+    z = b[:,2]
     B.pl.plot(x,y,z, color = 'b')
 B.pl.plot(xt, yt, zt, color = 'r', ls = '--')
 # B.pl.plot(xpz,ypz,zpz, color = 'g')
@@ -204,8 +209,8 @@ ax.set_zlabel('Z')
 fig2 = B.pl.figure()
 ax2 = fig2.add_subplot(111)
 for b in bundle:
-    r = b[3]
-    z = b[2]
+    r = b[:,3]
+    z = b[:,2]
     B.pl.plot(r,z, color = 'b')
 B.pl.plot(rt,zt, color = 'r', ls = '--')
 ax2.set_aspect('equal')
@@ -216,8 +221,8 @@ ax2.set_ylabel('Z')
 fig21 = B.pl.figure()
 ax21 = fig21.add_subplot(111)
 for b in bundle:
-    x = b[0]
-    y = b[1]
+    x = b[:,0]
+    y = b[:,1]
     B.pl.plot(x,y, color = 'b')
 B.pl.plot(xt,yt, color = 'r', ls = '--')
 ax21.set_aspect('equal')
@@ -225,3 +230,4 @@ ax21.set_xlabel('X')
 ax21.set_ylabel('Y')
 
 B.pl.show()
+

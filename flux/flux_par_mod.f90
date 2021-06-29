@@ -27,8 +27,8 @@ module flux_par_mod
   integer(kind = 4):: nbdry
   real(kind = 8), dimension(nw):: xxxsi(nw)
   real(kind=8), dimension(nwnh):: pcurrt(nwnh)
-  real(kind=8):: sifm
-  real(kind=8):: sifb
+  real(kind=8):: psi_axis
+  real(kind=8):: psi_bdry
   real(kind=8):: rzero
   real(kind=8):: bzero
   real(kind=8):: current
