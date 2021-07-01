@@ -24,6 +24,7 @@ particle_energy_mev = 3.
 track_length = 6.
 step_size = 0.01
 time_reversed = True
+reverse_poloidal_flux = False
 
 # ------------- Trajectory Bundls 
 

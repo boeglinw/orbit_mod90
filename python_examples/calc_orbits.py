@@ -146,6 +146,7 @@ Tr.tracker.particle_energy_mev = cd.get_value('particle_energy_mev')
 Tr.tracker.track_length = cd.get_value('track_length')
 Tr.tracker.step_size = cd.get_value('step_size')
 Tr.control_mod.time_reversed = cd.get_value('time_reversed')
+Tr.control_mod.reverse_poloidal_flux = cd.get_value('reverse_poloidal_flux')
 
 # Select which tracker to use
 Tr.tracker.selected_tracker = trackers[cd.get_value('selected_tracker')]

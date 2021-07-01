@@ -22,6 +22,7 @@ subroutine read_eqdsk(fname,imfit,ier)
   
   use orbit_parameters_mod
   use constants_and_masses_mod
+  use control_mod
   use flux_par_mod
   
   implicit none
@@ -129,6 +130,11 @@ subroutine read_eqdsk(fname,imfit,ier)
   ! ssibry: poloidal flux at the plasma boundary in Weber /rad
   ! bzero: Vacuum toroidal magnetic field in Tesla at rzero
 
+  if (reverse_poloidal_flux) then
+         ssimag = -ssimag
+         ssibry = -ssibry
+   endif
+  
   
   print *, '----------------------------------------------------------------------'
   READ(neqdsk, '(5e16.9)') current,xdum,xdum,rmaxis,xdum
@@ -195,13 +201,20 @@ subroutine read_eqdsk(fname,imfit,ier)
   READ(neqdsk, '(5e16.9)') ((psirz(i,j),i=1,mw),j=1,mh)
   print*, 'finished reading psirz'
 
+  if (reverse_poloidal_flux) then
+     psirz = -psirz
+  endif
+  
 
   print*, '----------------------------------------------------------------------'
   print*, 'reading QPSI' 
   READ(neqdsk, '(5e16.9)') (qpsi(i),i=1,mw)
   print*,'qpsi(1)= ', qpsi(1)
-  
+
   ! qpsi:  q values on uniform flux grid from axis to boundary
+  if (reverse_poloidal_flux) then
+     qpsi = - qpsi
+  endif
   
   print *, '----------------------------------------------------------------------'
   READ(neqdsk, '(2i5)') nbdry,limitr
