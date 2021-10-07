@@ -27,6 +27,27 @@ R_det                                       R_coll
 |-------------------------------------------|
 
 
+There are 3 bundle types:
+    
+There are 3 bundle types:
+    
+full : - calculate directions and positions on a Fibonacci grid and calculates 
+         collimator-detector overlap.
+       - includes the effect of the magnetic field in the collimator
+       - most realistic but time-consuming calculation
+
+square: - assume square detector and collimator with the same area as a round 
+          detector and collimator (R_det and R_coll define the area)
+       - ignores the magnetic field in collimator
+       - positions and directions on rectangular grids
+       - for quick studies
+
+round: - calculates directions on a Fibonacci grid and calculates 
+         collimator-detector overlap.
+       - start all trajectories at the center of the collimator.
+       - ignores the magnetic field in collimator
+
+
 @author: boeglinw
 """
 

@@ -34,10 +34,10 @@ reverse_poloidal_flux = False
 
 # bundle type possibilities: full, square, round
 
-bundle_type = square
+bundle_type = full
 
-number_of_detector_points = 5
-number_of_directions = 5
+number_of_detector_points = 50
+number_of_directions = 20
 
 zero_at_collimator = True
 fib_angle_scale = 1.

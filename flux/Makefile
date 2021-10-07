@@ -1,7 +1,7 @@
 #------Makefile for modules and the flux library ----------
 
 # modules
-MODOBJ = flux_par_mod.o em_fields_mod.o bfield.o checklim.o get_flux.o is_inside.o
+MODOBJ = flux_par_mod.o em_fields_mod.o bfield.o checklim.o get_flux.o is_inside.o get_psi.o
 
 INCLUDE = ../include/ -I../flux/
 

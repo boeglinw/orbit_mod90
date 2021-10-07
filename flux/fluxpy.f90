@@ -10,5 +10,6 @@ contains
   include 'bfield.f90'
   include 'is_inside.f90'
   include 'checklim.f90'
+  include 'get_psi.f90'
 end module flux
 
