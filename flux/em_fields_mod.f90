@@ -321,7 +321,7 @@ contains
   
   end function get_psi
 
-  function get_psi_array(r, z, n) result(psi_a)
+  subroutine get_psi_array(r, z, psi_a, n)
 
     ! calculate the relative flux for an array of points
     implicit none
@@ -330,8 +330,9 @@ contains
     ! position where field is required
     real(kind = 8), dimension(0:n-1), intent(in) :: r, z    
 
-    ! results
-    real(kind = 8), dimension(0:n-1) :: psi_a
+    ! results, this is returned at the python level as a result
+    
+    real(kind = 8), dimension(0:n-1), intent(out) :: psi_a
 
     !  local variables
     integer(kind = 4) :: i
@@ -342,7 +343,7 @@ contains
 
     return
 
-  end function get_psi_array
+  end subroutine get_psi_array
   
   
 end module em_fields_mod
