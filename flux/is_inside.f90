@@ -41,6 +41,8 @@ function is_inside (x, y, nlim, xlim, ylim)
 
   integer(kind = 4) :: i, j, k, ncross
   
+  print*, 'nlim = ', nlim
+  
   ! cast the horizontal ray and count the number of crossings, if odd then the point is inside
   ncross = 0  
   do k = 1, nlim - 1

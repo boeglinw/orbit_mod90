@@ -36,13 +36,14 @@ subroutine checklim (nx, ny, x, y, nlim, xlim, ylim, inside )
   
   implicit none
 
-  integer(kind = 4), dimension(nx*ny) :: inside
-  integer(kind = 4) :: nx, ny, nlim 
-  real(kind = 8), dimension(nlim) :: xlim
-  real(kind = 8), dimension(nlim) :: ylim
-  real(kind = 8), dimension(nx) :: x
-  real(kind = 8), dimension(ny) :: y   
-  
+  integer(kind = 4), intent(in) :: nx, ny, nlim 
+  real(kind = 8), dimension(nlim), intent(in) :: xlim
+  real(kind = 8), dimension(nlim), intent(in) :: ylim
+  real(kind = 8), dimension(nx), intent(in) :: x
+  real(kind = 8), dimension(ny), intent(in) :: y   
+
+  integer(kind = 4), dimension(nx*ny), intent(out) :: inside
+    
   real(kind = 8) :: s, t, di, f   
 
   logical :: is_inside
