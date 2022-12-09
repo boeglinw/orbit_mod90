@@ -101,14 +101,17 @@ class trajectory_bundle:
             counter += 1
 
 
-    def get_trajectory(self, i):
+    def get_trajectory(self, i, component = None):
         """
         Returns trajectory number i as a numpy array
 
         Parameters
         ----------
         i : int
-            index.
+            trajectory number.
+        component: string, optional
+            name of position vector component: x, y, z, r
+            
 
         Returns
         -------
@@ -119,16 +122,28 @@ class trajectory_bundle:
         if i >= self.n_trajectories :
             print( f'I have only {self.n_trajectories} trajectories, number {i} does not exist')
             return None
-        return np.array(list((self.bundle[i]).T))
+        
+        if component is None:
+            return np.array(list((self.bundle[i]).T))
+        elif component in self.information['bundle_variables'].keys():
+            cc = self.information['bundle_variables'][component]
+            return (np.array(list((self.bundle[i]).T)))[cc,:]
+        else:
+            print(f"No such component : {component}, possible values {list(self.information['bundle_variables'].keys())}")
+            return None        
 
-    def get_B_fields(self, i):
+
+    def get_B_fields(self, i, component = None, cartesian = False):
         """
         Returns the magnetic fields along trajectory number i as a numpy array
 
         Parameters
         ----------
-        i : TYPE
-            DESCRIPTION.
+        i : int
+            trajectory number.
+        
+        component: string, optional
+            name of position vector component: b_pol_r, b_pol_z, b_phi, b_total, psi_rel
 
         Returns
         -------
@@ -139,8 +154,27 @@ class trajectory_bundle:
         if i >= self.n_trajectories :
             print( f'I have only {self.n_trajectories} trajectories, number {i} does not exist')
             return None
-        return self.Bf[i].T
-
+        if component is None:
+            if cartesian:
+                # calc unit vectors
+                x,y,z,r = list(self.get_trajectory(i))
+                er = np.array([x/r, y/r, np.zeros_like(x)])
+                ephi = np.array([-er[1], er[0], np.zeros_like(x)] )
+                ez = np.array([np.zeros_like(x), np.zeros_like(x), np.ones_like(x)])
+                # get field comnponents
+                br, bz, bphi, bt, psi = list(self.Bf[i].T)
+                # calc cartesian field vecgor
+                bf = br*er + bz*ez + bphi*ephi
+                return bf
+            else:
+                return self.Bf[i].T
+        elif component in self.information['Bf_bundle_variables'].keys():
+            cc = self.information['Bf_bundle_variables'][component]
+            return (self.Bf[i].T)[cc,:]
+        else:
+            print(f"No such component : {component}, possible values {list(self.information['Bf_bundle_variables'].keys())}")
+            return None
+    
     def __len__(self):
         """
         return number of trajectories

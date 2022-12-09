@@ -30,3 +30,5 @@ This is a more complete program that calculates orbit bundles for a set of cylin
 
 All has been compiled with *gfortran (GNU Fortran (GCC) 8.2.0)* and *f2py (Version: 2, numpy Version: 1.19.2)*
 Most of the example scripts require *LabTools3* which can be installed using *pip (pip install LabTools3)* or from GitHub: *https://github.com/boeglinw/LabTools3.git*
+
+It is recommended to calculate orbits in a working directory instead of the orbit_mod90 directory. You can copy example parameter files and the calc_orbits.py file there. Please also read the top of the comments in calc_orbits.py about the setting of the PYTHONPATH to be able to run the code.

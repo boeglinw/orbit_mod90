@@ -1,0 +1,45 @@
+# ---- Detector information
+
+# detetor-collimator geometry
+
+# detector radius
+#\ R_det = 1.9e-3
+
+# collimator radius
+#\ R_coll = 1.9e-3
+
+# cylinder hole radius
+#\ R_cyl = 1.9e-3
+
+# distance detector-collimator
+#\ D =  0.0357 
+
+
+# all angles in degrees
+# all positions in m
+
+# color is the color from the matplotlib.colors.CSS4_COLORS color table, see color_list in calc_orbits.py
+#
+# typical names are: red, blue, green, magenta, cyan etc.
+
+# this makes 
+
+# detectors sortd in radial distance from inner to outer:
+
+# Detector 4  Si
+# Detector 3  Diamond
+# Detector 2  Si
+# detector 1  Si
+
+
+# Detector location and orientation
+
+# for Phi_tor = 0 xd coincides with the R direction
+
+#! Detector_number[i,0]/ Detector_name[s,1]/ theta_d[f,5]/ phi_d[f,6]/      yd[f,7]/     xd[f,8]/     zd[f,9]/  color[s,10]/
+
+  1                      S5G1            40.           -30.          -33.15e-3     -68.117e-3   30.014e-3      red
+  2                      S15G9           40.           -35.          -16.114e-3    -75.07e-3    38.311e-3     green
+
+  3                      S32G28          40.           -40.          -42.974e-3    -87.691e-3   13.981e-3        blue
+  4                      S6G2            40.           -45.          -28.111e-3    -96.445e-3   24.414e-3       magenta

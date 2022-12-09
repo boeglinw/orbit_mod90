@@ -29,7 +29,7 @@ rp = np.array([xp, yp]).T
 
 #%% check is_in_limits
 
-# checlk which points in  =an array of points are withing the limits lx, ly
+# check which points in an array of points are withing the limits lx, ly
 res_lim = FL.flux.is_in_limits(rp[:,0], rp[:,1], lx, ly)
 
 #%% check checklim 

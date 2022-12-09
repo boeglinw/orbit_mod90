@@ -12,7 +12,7 @@ coordinate systems:
         Cartesian coordinates:
     
         z-axis : perp. to mid plane
-        z-axis : perp. to mid plane
+        x-axis : in mid-plane (phi = 0)
         y-axis : in mid-plane (phi = pi/2.)
     
         Spherical coordinates:

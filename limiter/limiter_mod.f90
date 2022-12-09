@@ -233,7 +233,7 @@ contains
        limiter_initialized = .false.
        return
     endif
-
+    print *, 'Initializeing limiter using file :' , TRIM(ADJUSTL(limiter_directory))//'/'//limiter_filename
     READ(nlimf, *)    ! skip comment line
     READ(nlimf, *) ntorreg
     print *, 'Number of toroidal regions =', ntorreg

@@ -138,7 +138,7 @@ dh = B.get_file(cd['detector_head'])
 
 #%%  set initial values for tracker
 #
-Tr.tracker.particle_charge = cd.get_value('particle_charge')
+Tr.tracker.particle_charge_ec = cd.get_value('particle_charge')
 # Tr.tracker.particle_mass_amu = 1.007347
 Tr.tracker.particle_mass_amu = cd.get_value('particle_mass_amu')
 Tr.tracker.particle_energy_mev = cd.get_value('particle_energy_mev')
@@ -179,7 +179,6 @@ Tr.tracker.load_flux()
 
 
 #%% setup the limiter
-
 Tr.limiter_control_mod.set_limiter_file_name(cd.get_value('limiter_file_name'))
 Tr.limiter_control_mod.set_limiter_directory(cd.get_value('limiter_directory'))
 Tr.limiter_control_mod.limiter_init()
@@ -292,7 +291,7 @@ def plot_plasma_rz(central = False):
     
     # draw the plasma
     B.pl.plot(rbdry, zbdry, color = 'r')
-    
+
     # plot all  in detector_head:
     for dd in detector_head:
         if central:
@@ -306,6 +305,7 @@ def plot_plasma_rz(central = False):
                 B.pl.plot(r,z, color = color_table[dd.color])
     B.pl.ylim((-2.,2.))
     B.pl.xlim((0.,2.))
+
 
 
 #%% midplane plot
@@ -330,4 +330,3 @@ def plot_plasma_mid(central = False):
     B.pl.ylim((-2.,2.))
     B.pl.xlim((-2.,2.))
     
-    B.pl.show()
