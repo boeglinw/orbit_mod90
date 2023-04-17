@@ -9,7 +9,9 @@ import calc as C
 import numpy as np
 import matplotlib.pyplot as pl
 
-import boris_cylinder as BC
+# import boris_cylinder as BC
+import BorisCylpy as BC
+
 import acceptance_array as AA
 
 import copy as CO

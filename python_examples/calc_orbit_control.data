@@ -9,6 +9,7 @@ particle_charge = 1
 # mass in amu
 particle_mass_amu = 1.00727647
 
+
 # energy in MeV
 particle_energy_mev = 3.
 
@@ -34,10 +35,10 @@ reverse_poloidal_flux = False
 
 # bundle type possibilities: full, square, round
 
-bundle_type = full
+bundle_type = round
 
 number_of_detector_points = 50
-number_of_directions = 20
+number_of_directions = 5
 
 zero_at_collimator = True
 fib_angle_scale = 1.
@@ -63,7 +64,7 @@ gfile_name = 029880.00234.dat
 # ------------ Limiter setup
 
 limiter_directory = ../example_data/
-limiter_file_name = MASTLIMIT00.dat
+limiter_file_name = MASTULIMIT_RP_2022.dat
 
 #  if true stop track when it hits the limiter
 check_limiter = True

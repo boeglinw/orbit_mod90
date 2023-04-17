@@ -40,6 +40,10 @@ color_names = list(color_table.keys())
 
 
 
+#%% location of the python modules for orbit_mod90: set this to the correct directory
+
+orbit_mod90_python = '/Users/boeglinw/Documents/boeglin.1/Fusion/Fusion_Products/orbit_mod90/python_modules'
+
 
 #%% setup the PYTHON path
 
@@ -96,7 +100,7 @@ HERE = os.getcwd()
 parser.add_argument('-c', '--control_file', help="orbit calculation control file",
                     default = 'calc_orbit_control.data')
 parser.add_argument('-P', '--orbit_mod90_path', help="Path to orbit_mod90 python modules ( will be added to PYTHONPATH",
-                    default = HERE+'/../python_modules')
+                    default = orbit_mod90_python)
 
 parser.add_argument('-n','--no_plot', action='store_true')
 
@@ -105,9 +109,8 @@ args = parser.parse_args()
 
 orbit_mod90_python = args.orbit_mod90_path
 
-#%% location of the python modules for orbit_mod90
-orbit_mod90_python = '/Users/boeglinw/Documents/boeglin.1/Fusion/Fusion_Products/orbit_mod90/python_modules'
 
+#%% setup system path
 if (add_sys_path(orbit_mod90_python)) < 0 :
     print(f'Cannot add {orbit_mod90_python} to PYTHONPATH as it does not exist !')
     sys.exit(-1)

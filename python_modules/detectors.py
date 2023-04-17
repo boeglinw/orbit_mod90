@@ -7,13 +7,20 @@ Detector module describing each detector, location and orientation. Is is also u
 
 Each detector is part of a detector head. The so-called local coordinate system is identical with the detector head coordinate system. 
 Detector positions are most frequently given with respect to the local (head) coordinate system. Each detector has is own local coordinate system that is
-used to generate tracks (see coordinate_systems module)
+used to generate tracks (see coordinate_systems module). For calculating trajectories the detector position refers to the 
+position of the center of the detector collimator and the direction to the normal to this surface pointing in the direction of
+the time reversed orbit.
+
+
+Add the calculation of geometry parameters used in FIDASIM
 
 @author: boeglinw
 """
 import copy as C
 import time
 import numpy as np
+
+import h5py 
 
 
 # coordinate transformations
@@ -99,7 +106,7 @@ class detector:
             self.set_tracker(tracker)
         self.bundle_fname = bundle_fname
         self.color = color    # color for drawing trajectories
-        self.bundle_vars = {'x':0, 'y':1, 'z':2, 'r':3}
+        self.bundle_vars = {'x':0, 'y':1, 'z':2, 'r':3, 'phi':4, 'vx':5, 'vy':6, 'vz':7, 'vr':8, 'vphi':9}
         self.Bf_bundle_vars = {'b_pol_r':0, 'b_pol_z':1, 'b_phi':2, 'b_total':3, 'psi_rel':4}
 
     def set_tracker(self, Tr_l):
@@ -118,7 +125,7 @@ class detector:
             self.B_det = self.Tr.em_fields_mod.bfield3(self.det_pos.pos)
 
     def init_trajectories(self, N_pos = 10, N_dir = 50, N_s = 50, dN_s = 2):
-        # calculatetrajectory initial positions and velocities
+        # calculate trajectory initial positions and velocities
         # setup detector bundle get the kinematic parameters from the tracker
         self.bd = MTb.bundle(  N_pos = N_pos,  # number of fibonacci points in detector area
                          N_dir = N_dir, # number of direction fibonacci points
@@ -133,18 +140,27 @@ class detector:
         # intialize
         self.bd.initialize()
         
-    def calc_central(self):
+    def calc_central(self, save = True):
         # calculate central trajectory
         # dwetector position
         r_c =  self.det_pos_std          
         # initial velocity along detector-collimator axis
         v_c = self.det_dir_std*self.v0   
         nc = self.Tr.tracker.get_trajectory(r_c, v_c )
+        #trajectory
         x = C.copy(self.Tr.tracker.trajectory[:nc-1,0])
         y = C.copy(self.Tr.tracker.trajectory[:nc-1,1])
         z = C.copy(self.Tr.tracker.trajectory[:nc-1,2])
         r = np.sqrt(x**2 + y**2)
-        self.central_track = np.stack([x,y,z,r]).T
+        phi = Cs.get_angle(x,y)
+        # velocities
+        vx = C.copy(self.Tr.tracker.trajectory[:nc-1,3])
+        vy = C.copy(self.Tr.tracker.trajectory[:nc-1,4])
+        vz = C.copy(self.Tr.tracker.trajectory[:nc-1,5])
+        vr = vx*np.cos(phi) + vy*np.sin(phi)
+        vphi = -vx*np.sin(phi) + vy*np.cos(phi)
+        #       
+        self.central_track = np.stack([x,y,z,r,phi,vx,vy,vz,vr,vphi]).T
         self.central_bfields = np.array([self.Tr.em_fields_mod.bfield(rr,zz) for rr,zz in zip(r,z)])
         # save additional trajectory bundle  information including kinematics
         general_info = {'particle_charge_ec': self.Tr.tracker.particle_charge_ec+0.,
@@ -158,13 +174,15 @@ class detector:
                       'bundle_variables':self.bundle_vars,
                       'Bf_bundle_variables':self.Bf_bundle_vars,
                       'comment':self.comment }
-        np.savez_compressed('central_'+self.bundle_fname,
-                            trajectories = self.central_track,
-                            B_fields  = self.central_bfields,
-                            information = general_info)
+        if save:
+            np.savez_compressed('central_'+self.bundle_fname,
+                                trajectories = self.central_track,
+                                B_fields  = self.central_bfields,
+                                information = general_info)
         
         
-    def calc_trajectories(self, bundle_type = 'full'):
+    def calc_trajectories(self, bundle_type = 'full', save = True):
+        self.bundle_type = bundle_type
         # ready to track bundles
         t_start = time.time()  # for timing
         # calculate initial values for bundles
@@ -196,10 +214,17 @@ class detector:
             y = C.copy(self.Tr.tracker.trajectory[:nc-1,1])
             z = C.copy(self.Tr.tracker.trajectory[:nc-1,2])
             r = np.sqrt(x**2 + y**2)
+            phi = Cs.get_angle(x,y)
+            # velocities
+            vx = C.copy(self.Tr.tracker.trajectory[:nc-1,3])
+            vy = C.copy(self.Tr.tracker.trajectory[:nc-1,4])
+            vz = C.copy(self.Tr.tracker.trajectory[:nc-1,5])
+            vr = vx*np.cos(phi) + vy*np.sin(phi)
+            vphi = -vx*np.sin(phi) + vy*np.cos(phi)
             # calculate the magnetic field used in the calculation
             bf = np.array([self.Tr.em_fields_mod.bfield(rr,zz) for rr,zz in zip(r,z)])
             # combine magnetic field and position
-            bundle.append(np.stack([x,y,z,r]).T)
+            bundle.append(np.stack([x,y,z,r,phi,vx,vy,vz,vr,vphi]).T)
             Bf_bundle.append(bf)
             # all done
         t_end = time.time()
@@ -220,8 +245,43 @@ class detector:
                       'bundle_variables':self.bundle_vars,
                       'Bf_bundle_variables':self.Bf_bundle_vars,
                       'comment':self.comment }
-        np.savez_compressed(self.bundle_fname,
-                            trajectories = self.bundle,
-                            B_fields  = self.Bf_bundle,
-                            acceptance = self.acc,
-                            information = general_info)
+        if save:
+            np.savez_compressed(self.bundle_fname,
+                                trajectories = self.bundle,
+                                B_fields  = self.Bf_bundle,
+                                acceptance = self.acc,
+                                information = general_info)
+    
+
+
+    def setup_hdf_data(self):
+        # prepare data to write into a FIDASIM hdf file
+        self.hdf_nsteps = self.Tr.tracker.nsteps + 0  # max. number of steps (this gives the size for the dat arrays)
+        self.hdf_n_steps_actual = np.array([bd.shape[0] for bd in self.bundle])
+        self.hdf_n_rays = self.bundle.shape[0]
+        
+    def get_fidasim_geometry(self):
+        # calculate the standard geometry parameters for trhe CHORD structure of FIDASIM
+        # detector direction
+        n_det = self.det_dir_std
+        # the position of the collimator
+        r_coll = self.det_pos_std 
+        # position of the detector
+        r_det = self.det_pos_std - self.D*n_det
+        # calculate perp. directions to calculate edges. The y-direction os parallel to the Tokamak x-y plane
+        n_det_xy = np.hstack((n_det[:2], [0]))
+        n_y = Cs.get_unit_vector(np.cross(n_det_xy, n_det))
+        n_x = np.cross(n_y, n_det)
+        # calculate edges
+        # collimator
+        self.a_r = r_coll + self.R_coll*n_x  # right  
+        self.a_t = r_coll + self.R_coll*n_y  # top
+        self.a_c = r_coll                    # center
+        #detector        
+        self.d_r = r_det + self.R_det*n_x  # right
+        self.d_t = r_det + self.R_det*n_y  # top
+        self.d_c = r_det                   # center
+    
+        
+
+        

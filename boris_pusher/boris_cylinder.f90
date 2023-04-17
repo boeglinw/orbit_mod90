@@ -62,7 +62,7 @@ contains
     ! qv charge in e
     ! mv mass in electron masses e.g. proton
     ! Rv radius of cylinder
-    ! Crv collimator radius
+    ! Crv collimator radius (not used at the moment)
     ! dv distance collimator detector
     ! stepv size
     ! Nstepv number of steps
@@ -184,7 +184,8 @@ contains
              track(i,j) = r0(j)
              track(i,j+3) = v0(j)
           enddo
-          if ( (.not. hit) .and. (r0(3) .le. d) .and. ((r_xy .gt. R) .or. (r_xy .gt. C_r)) ) then   ! cylinder wall or collimator was hit 
+          if ( (.not. hit) .and. (r0(3) .le. d) .and. ((r_xy .gt. R)) ) then   ! cylinder wall was hit, collimator should be checked later 
+          ! if ( (.not. hit) .and. (r0(3) .le. d) .and. ((r_xy .gt. R) .or. (r_xy .gt. C_r)) ) then   ! cylinder wall or collimator was hit 
              hit = .True.
              if (stop_at_hits) then
                 n_calc = i
@@ -203,7 +204,8 @@ contains
              track(i,j+3) = v0(j)
           enddo
           r_xy = sqrt(r0(1)**2 + r0(2)**2)
-          if ((.not. hit) .and. (r0(3) .le. d) .and. ((r_xy .gt. R) .or. (r_xy .gt. C_r))) then   ! cylinder wall or collimator was hit 
+          if ( (.not. hit) .and. (r0(3) .le. d) .and. ((r_xy .gt. R)) ) then   ! cylinder wall was hit, collimator should be checked later
+          ! if ((.not. hit) .and. (r0(3) .le. d) .and. ((r_xy .gt. R) .or. (r_xy .gt. C_r))) then   ! cylinder wall or collimator was hit 
              hit = .True.
              if (stop_at_hits) then
                 n_calc = i
