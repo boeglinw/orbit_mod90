@@ -239,6 +239,8 @@ class bundle:
         # calculate trajectories
         #  stop when wall is hit
         BC.boris_cylinder.stop_at_hits = stop
+        Bm = np.sqrt(np.sum(BC.boris_cylinder.b0**2))
+        print(f'MTB: B-field at detector = {BC.boris_cylinder.b0} abs =  {Bm}')
         # calculate trajectory for each position and each direction
         start_time = timeit.default_timer()
         for i,rr in enumerate(self.r_init):
