@@ -22,3 +22,5 @@ Untitled.*
 __pycache__
 .ipynb_checkpoints
 *.mod
+*.npz
+*.pyc

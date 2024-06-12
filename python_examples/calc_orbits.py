@@ -19,6 +19,13 @@ to get help on the arguments type
 
     %run calc_orbits.py --help
 
+
+WB June 2024
+
+new option: -D use detector head file that contains individual collimator geometries for each detector
+
+default: use common geometries 
+
 @author: boeglinw
 """
 
@@ -104,11 +111,14 @@ parser.add_argument('-P', '--orbit_mod90_path', help="Path to orbit_mod90 python
 
 parser.add_argument('-n','--no_plot', action='store_true')
 
+parser.add_argument('-D','--individual_detector_collimators', action='store_true')
+
 # setup parser
 args = parser.parse_args()
 
 orbit_mod90_python = args.orbit_mod90_path
 
+individual_detector_geometry = args.individual_detector_collimators
 
 #%% setup system path
 if (add_sys_path(orbit_mod90_python)) < 0 :
@@ -202,6 +212,11 @@ arm_rotation = cd.get_value('arm_rotation')*dtr
 detector_head = []
 
 for i,n  in enumerate(dh['Detector_number']):
+    if individual_detector_geometry:
+        R_det_loc = dh['R_det'][i]; R_coll_loc = dh['R_coll'][i]; R_cyl_loc = dh['R_cyl'][i]; D_loc = dh['D'][i]
+    else:
+        R_det_loc = dh.par['R_det']; R_coll_loc = dh.par['R_coll']; R_cyl_loc = dh.par['R_cyl']; D_loc = dh.par['D']
+        
     det_l = Det.detector(n,
                         dh['Detector_name'][i],
                         head_position = np.array([R_p, Z_p, Phi_p]),
@@ -211,7 +226,7 @@ for i,n  in enumerate(dh['Detector_number']):
                         tracker = Tr,
                         bundle_fname = f'det_{n}_'+dh['Detector_name'][i]+'.npz',
                         color = dh['color'][i],
-                        R_det = dh.par['R_det'], R_coll = dh.par['R_coll'], R_cyl = dh.par['R_cyl'], D = dh.par['D'],
+                        R_det = R_det_loc, R_coll = R_coll_loc, R_cyl = R_cyl_loc, D = D_loc,
                         zero_at_coll = zero_at_collimator,
                         fib_scale = fib_angle_scale,
                         ignore_detector_field = ignore_detector_bfield)

@@ -1,5 +1,8 @@
 # ---- Detector information
 
+# all angles in degrees
+# all positions in m
+
 # detetor-collimator geometry
 
 # detector radius
@@ -15,8 +18,7 @@
 #\ D = 30.e-3
 
 
-# all angles in degrees
-# all positions in m
+
 
 # color is the color from the matplotlib.colors.CSS4_COLORS color table, see color_list in calc_orbits.py
 #
@@ -25,10 +27,10 @@
 
 # Detector location and orientation
 
-#! Detector_number[i,0]/ Detector_name[s,1]/ theta_d[f,5]/ phi_d[f,6]/ xd[f,7]/ yd[f,8]/ zd[f,9]/  color[s,10]/
+#! Detector_number[i,0]/ Detector_name[s,1]/ theta_d[f,5]/ phi_d[f,6]/ xd[f,7]/ yd[f,8]/ zd[f,9]/  color[s,10]/ 
 
-  0                      Channel_0             45.           0.          0.       0.       0.      red
-  1                      Channel_1             55.           0.          0.05     0.       0.05    green
+  0                      Channel_0             45.           0.          0.       0.       0.      red     
+  1                      Channel_1             55.           0.          0.05     0.       0.05    green      
 
-  2                      Channel_2             65.           0.          0.       0.       0.      blue
-  4                      Channel_3             75.           0.          0.05     0.       0.05    magenta
+  2                      Channel_2             65.           0.          0.       0.       0.      blue         
+  4                      Channel_3             75.           0.          0.05     0.       0.05    magenta     

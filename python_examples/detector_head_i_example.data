@@ -1,0 +1,32 @@
+# ---- Detector information use with -D option
+
+# all angles in degrees
+# all positions in m
+
+
+# detetor-collimator geometry
+
+# detector radius R_det
+
+# collimator radius R_coll
+
+# cylinder hole radius R_cyl
+
+# distance detector-collimator D
+
+
+
+# color is the color from the matplotlib.colors.CSS4_COLORS color table, see color_list in calc_orbits.py
+#
+# typical names are: red, blue, green, magenta, cyan etc.
+
+
+# Detector location and orientation
+
+#! Detector_number[i,0]/ Detector_name[s,1]/ theta_d[f,5]/ phi_d[f,6]/ xd[f,7]/ yd[f,8]/ zd[f,9]/  color[s,10]/  R_det[f,11]/ R_coll[f, 12]/ R_cyl[f, 13]/ D[f,14]/
+
+  0                      Channel_0             45.           0.          0.       0.       0.      red           1.9e-3       1.9e-3         1.9e-3        30e-3 
+  1                      Channel_1             55.           0.          0.05     0.       0.05    green         1.9e-3       1.9e-3         1.9e-3        30e-3 
+
+  2                      Channel_2             65.           0.          0.       0.       0.      blue          1.9e-3       1.9e-3         1.9e-3        30e-3 
+  4                      Channel_3             75.           0.          0.05     0.       0.05    magenta       1.9e-3       1.9e-3         1.9e-3        30e-3 

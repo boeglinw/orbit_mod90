@@ -85,4 +85,8 @@ detector_head_R = 1.6
 detector_head_Z = 0. 
 detector_head_Phi = 85.
 
+# common detector geometry
 detector_head = detector_head_example.data
+
+# individual detector geomtery, use -D option in calc_orbits.py
+#detector_head = detector_head_i_example.data
