@@ -1,0 +1,107 @@
+# example of control file for calc_orbits.py
+# this is parameter file
+
+# ----- pickle file name for trajectories
+
+fidasim_file = Test_detector_array1.pcl
+
+# system name for FIDASIM (max. 20 char)
+fidasim_system_name = 'Test Detector Array 1' 
+
+# ---- Particle kinematics
+
+# charge in units of e
+particle_charge = 1
+
+# mass in amu
+particle_mass_amu = 1.00727647
+
+# energy in MeV
+
+particle_energy_mev_min = 2.5
+particle_energy_mev_max = 3.5
+n_particle_energy_steps = 10
+
+# ---- Tracking setup
+# This is a parameters file and should be read using
+#
+# LT.parameterfile.pfile
+#
+
+# ------------- Tracking setup
+# max. track length and step size in m
+track_length = 6.
+step_size = 0.1
+time_reversed = True
+reverse_poloidal_flux = False
+
+# ------------- Trajectory Bundls 
+
+# the total number of trajectories =  number_of_detector_points * number_of_directions: for full bundle
+#                                     number_of_detector_points**2 * number_of_directions**2 : for square
+#                                     number of_directions: for round bundle
+
+# bundle type possibilities: full, square, round
+
+bundle_type = round
+
+number_of_detector_points = 50
+number_of_directions = 5
+
+zero_at_collimator = True
+fib_angle_scale = 1.
+
+ignore_detector_bfield = False
+
+# fast version
+selected_tracker = Boris
+
+# slower, original version
+# selected_tracker = Bulirsch_stoer
+
+# reverse velocities (when tim re_reverset is True the position sequence is time reversed but velocities are not if set true)
+#
+# this is to make sure that the pitch angles are calculated correctly in FIDASIM
+
+reverse_velocities = False
+
+# ------------- Equilibrium setup
+
+# equilibrium file information
+efit_directory = ./data/
+
+# eqdsk file name (excl. the first g)
+gfile_name = 029880.00234.dat
+
+
+# ------------ Limiter setup
+
+limiter_directory = ./data/
+limiter_file_name = MASTLIMIT2013.dat
+
+
+#  if true stop track when it hits the limiter
+check_limiter = True
+
+# print location when limiter is hit by a track
+print_hit = False
+
+
+# ------------ General detector information
+
+# all angles in degrees
+# all positions in m
+
+# Arm rotation angle
+arm_rotation = 0.
+
+# detector head positions
+detector_head_R = 1.6 
+detector_head_Z = 0. 
+detector_head_Phi = 85.
+
+# common geometry
+# detector_head = ./data/detector_head_4ch.data
+
+# individual geometry use -D option 
+detector_head = ./data/detector_head_4ch_PD_i_2023.data

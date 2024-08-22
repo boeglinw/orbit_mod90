@@ -1,0 +1,67 @@
+# ---- Detector information
+
+# use this file with the -D option in calc orbits
+
+# all angles in degrees
+# all positions in m
+
+# detector geometry
+
+# detector radius R_det
+# collimator radius R_coll 
+# cylinder hole radius R_cyl
+# distance detector-collimator D 
+
+
+# detector orientations
+# theta_d
+# phi_d
+
+# detector positions
+# xd
+# yd
+
+# color is the color from the matplotlib.colors.CSS4_COLORS color table, see color_list in calc_orbits.py
+#
+# typical names are: red, blue, green, magenta, cyan etc.
+
+# this makes 
+
+# detectors sorted in radial distance from inner to outer:
+
+# Detector 4  Si         S6G2
+# Detector 2  Diamond    S15G9
+# Detector 3  Si         S5G1
+# detector 1  Si         S32G28
+
+
+# Detector location and orientation
+
+# for Phi_tor = 0 xd coincides with the R direction
+
+#! Detector_number[i,0]/ Detector_name[s,1]/ theta_d[f,5]/ phi_d[f,6]/      yd[f,7]/     xd[f,8]/     zd[f,9]/  color[s,10]/  R_det[f,11]/ R_coll[f, 12]/ R_cyl[f, 13]/ D[f,14]/  
+
+
+# updated positions from Ramona's thesis such that detector 4 is at 0 offset
+# the detector coordinate origin is at the r-position of detector 2 (closest to the Plasma)
+# these are the new detector numbers
+
+  3                      S5G1            40.           -30.          -30.64e-3      28.81e-3   31.11e-3      blue            1.9e-3       1.9e-3        1.9e-3      0.0357  
+  4                      S15G9_Diamond   40.           -35.          -39.06e-3      21.13e-3   14.62e-3     yellow           1.e-3        1.e-3         1.9e-3        0.0380
+
+  1                      S32G28          40.           -40.          -14.32e-3      9.090e-3   41.59e-3        red           1.9e-3       1.9e-3        1.9e-3      0.0357
+  2                      S6G2            40.           -45.          -25.80e-3      0e-3       27.49e-3       green          1.9e-3       1.9e-3        1.9e-3      0.0357
+
+
+
+
+
+
+
+
+
+
+
+
+
+
