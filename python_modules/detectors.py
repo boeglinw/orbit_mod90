@@ -181,7 +181,8 @@ class detector:
                                 information = general_info)
         
         
-    def calc_trajectories(self, bundle_type = 'full', save = True):
+    def calc_trajectories(self, bundle_type = 'full', save = True, inside_only = False):
+        # inside_only = True: save only the part inside the last closed flux surface
         self.bundle_type = bundle_type
         # ready to track bundles
         t_start = time.time()  # for timing
@@ -221,11 +222,21 @@ class detector:
             vz = C.copy(self.Tr.tracker.trajectory[:nc-1,5])
             vr = vx*np.cos(phi) + vy*np.sin(phi)
             vphi = -vx*np.sin(phi) + vy*np.cos(phi)
+            # current track
+            t_loc = np.stack([x,y,z,r,phi,vx,vy,vz,vr,vphi]).T
             # calculate the magnetic field used in the calculation
             bf = np.array([self.Tr.em_fields_mod.bfield(rr,zz) for rr,zz in zip(r,z)])
             # combine magnetic field and position
-            bundle.append(np.stack([x,y,z,r,phi,vx,vy,vz,vr,vphi]).T)
-            Bf_bundle.append(bf)
+            if inside_only:
+                # only keep those steps that are inside the plasma
+                psirel = bf[:,4]
+                inside = (0 <= psirel) & (psirel <= 1.)
+                bundle.append(t_loc[inside])
+                Bf_bundle.append(bf[inside])
+            else:
+                # keep all steps
+                bundle.append(t_loc)
+                Bf_bundle.append(bf)
             # all done
         t_end = time.time()
         print("Time used for ", i+1, " tracks = ", t_end - t_start)
