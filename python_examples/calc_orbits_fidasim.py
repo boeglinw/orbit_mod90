@@ -110,7 +110,7 @@ def read_dict(filename):
     with open(filename, 'rb') as f:
         d = PCL.load(f)
         f.close()
-    return f
+    return d
         
 
 
@@ -269,6 +269,9 @@ ignore_detector_bfield = cd.get_value('ignore_detector_bfield')
 # reverse velocities
 reverse_velocities = cd.get_value('reverse_velocities')
 
+# save inside part only
+save_inside_only = cd.get_value('save_inside_only')
+
 #%% initialize tracker: allocate space for trajectory data in BT.tracker.trajectory
 #
 Tr.tracker.init_tracker()
@@ -324,6 +327,7 @@ for i,n  in enumerate(dh['Detector_number']):
 for det_l in detector_head:
     det_l.all_central = []
     det_l.all_bundles = []
+    det_l.all_Bf_bundles = []
     det_l.all_hdf_info = []
     det_l.all_acc = []
     det_l.get_fidasim_geometry()
@@ -331,7 +335,7 @@ for det_l in detector_head:
         Tr.tracker.particle_energy_mev = E_p  # set new particle energy in MeV
         Tr.tracker.init_tracker()             # init tracker wirh new energy          
         det_l.init_trajectories(N_pos = N_pos_det, N_dir = N_dir_det)   # init trajectory calculation
-        det_l.calc_trajectories(bundle_type = trajectory_bundle_type,save = False)
+        det_l.calc_trajectories(bundle_type = trajectory_bundle_type,save = False, inside_only = save_inside_only)
         det_l.calc_central(save = False)
         # calculations complete store results
         det_l.setup_hdf_data()
@@ -339,6 +343,7 @@ for det_l in detector_head:
         det_l.all_hdf_info.append([det_l.hdf_nsteps, det_l.hdf_n_steps_actual,det_l.hdf_n_rays])
         det_l.all_central.append(C.copy(det_l.central_track))  # store central tracks
         det_l.all_bundles.append(C.copy(det_l.bundle))         # store trajectory bundles (rays, sightlines)
+        det_l.all_Bf_bundles.append(C.copy(det_l.Bf_bundle))   # store corresponding B-fields 
         det_l.all_acc.append(C.copy(det_l.acc))
 if args.no_plot:
     sys.exit()
@@ -367,33 +372,48 @@ daomega_a = np.moveaxis(daomega, 0, -1)
 
 # array of indices for selected trajectory variables
 p_array = np.array([detector_head[0].bundle_vars[k] for k in ['vr', 'vphi', 'vz', 'r','phi','z' ]])
+pb_array = np.array([detector_head[0].Bf_bundle_vars[k] for k in ['b_pol_r', 'b_phi', 'b_pol_z', 'b_total','psi_rel']])
 
 # indices into traj_data
 v_array = np.array([0,1,2])
-pos_var_array = np.array([0,2,3,5])  # vr, vz, r, z
+pos_var_array = np.array([0,1,2,3,5])  # vr, vphi, vz, r, z
 dsightline = []
 
 
 s_data = []
+sb_data = []
+# loop over all detector heads
 for det_l in detector_head[:]:
     e_data = []
+    eb_data = []  # B-field data array
+    # loop over all detector trajectory bundles
     for i,e_bundle in enumerate(det_l.all_bundles[:]):
         t_data = []
+        tb_data = []
+        e_Bf_bundle = det_l.all_Bf_bundles[i]
+        # loop over all different energies 
         for j,t in enumerate(e_bundle[:]):
+            bf_loc = e_Bf_bundle[j]
             ns = det_l.all_hdf_info[i][1][j]  # get the corresponding number of steps
             # copy trajectory to traj_data
             traj_data = np.zeros(shape = (Tr.tracker.nsteps, 6))
+            trbf_data = np.zeros(shape = (Tr.tracker.nsteps, 5))
             traj_data[0:ns,:] = t[:,p_array]
+            trbf_data[0:ns,:] = bf_loc[:,pb_array]
             # reverse velocity direction if selected
             if reverse_velocities:
                 traj_data[0:ns,v_array] *= -1
             # convert position dependent variables to cm
             traj_data[0:ns,pos_var_array] *= m2cm
             t_data.append(traj_data)
+            tb_data.append(trbf_data)
         e_data.append(t_data)
+        eb_data.append(tb_data)
     s_data.append(e_data)
+    sb_data.append(eb_data)
     
 ds_data = np.array(s_data)
+dsb_data = np.array(sb_data)
 
 # move axes to be compatible with FIDASIM input  
 sightline_a = np.moveaxis(ds_data, [0,1,-1,-2], [-1,0,1,2])
@@ -422,6 +442,7 @@ FD['earray'] = e_particle*MeV2KeV
 FD['nactual'] = nactual_a
 FD['daomega'] = daomega_a
 FD['sightline'] = sightline_a
+FD['sightline_Bf'] = dsb_data
 
 # save dictionary
 save_dict(fidasim_file, FD)

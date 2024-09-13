@@ -31,7 +31,7 @@ n_particle_energy_steps = 10
 # ------------- Tracking setup
 # max. track length and step size in m
 track_length = 6.
-step_size = 0.1
+step_size = 0.01
 time_reversed = True
 reverse_poloidal_flux = False
 
@@ -65,14 +65,17 @@ selected_tracker = Boris
 
 reverse_velocities = False
 
+save_inside_only = True
+
 # ------------- Equilibrium setup
 
 # equilibrium file information
 efit_directory = ./data/
 
 # eqdsk file name (excl. the first g)
-gfile_name = 029880.00234.dat
-
+# gfile_name = 029880.00234.dat
+gfile_name = 029906.00214.dat
+#gfile_name = 29904.214.dat
 
 # ------------ Limiter setup
 
@@ -96,7 +99,7 @@ print_hit = False
 arm_rotation = 0.
 
 # detector head positions
-detector_head_R = 1.6 
+detector_head_R = 1.75 
 detector_head_Z = 0. 
 detector_head_Phi = 85.
 
