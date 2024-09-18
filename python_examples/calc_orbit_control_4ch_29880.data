@@ -1,0 +1,92 @@
+# example of control file for calc_orbits.py
+# this is parameter file
+
+# ---- Particle kinematics
+
+# charge in units of e
+particle_charge = 1
+
+# mass in amu
+particle_mass_amu = 1.00727647
+
+# energy in MeV
+particle_energy_mev = 3.0
+
+
+# ---- Tracking setup
+# This is a parameters file and should be read using
+#
+# LT.parameterfile.pfile
+#
+
+# ------------- Tracking setup
+# max. track length and step size in m
+track_length = 60.
+step_size = 0.01
+time_reversed = True
+reverse_poloidal_flux = False
+
+# ------------- Trajectory Bundls 
+
+# the total number of trajectories =  number_of_detector_points * number_of_directions: for full bundle
+#                                     number_of_detector_points**2 * number_of_directions**2 : for square
+#                                     number of_directions: for round bundle
+
+# bundle type possibilities: full, square, round
+
+bundle_type = full
+
+number_of_detector_points = 100
+number_of_directions = 70
+
+zero_at_collimator = True
+fib_angle_scale = 1.
+
+ignore_detector_bfield = False
+
+# fast version
+selected_tracker = Boris
+
+# slower, original version
+# selected_tracker = Bulirsch_stoer
+
+
+# ------------- Equilibrium setup
+
+# equilibrium file information
+efit_directory = ./data
+
+# eqdsk file name (excl. the first g)
+gfile_name = 029880.00234.dat
+
+# ------------ Limiter setup
+
+limiter_directory = ./data/
+limiter_file_name = MASTLIMIT2013.dat
+
+#  if true stop track when it hits the limiter
+check_limiter = True
+
+# print location when limiter is hit by a track
+print_hit = False
+
+# ------------ General detector information
+
+orbit_dir = ./results/29880_0234/
+
+# all angles in degrees
+# all positions in m
+
+# Arm rotation angle
+arm_rotation = 0.
+
+# detector head positions  
+# old offset : to the reference position of the RP arm 96.445e-3
+# detector_head_R = 1.639 
+# added together
+
+detector_head_R = 1.74
+detector_head_Z = -0.0
+detector_head_Phi = 80.3656  
+
+detector_head = ./data/detector_head_4ch.data

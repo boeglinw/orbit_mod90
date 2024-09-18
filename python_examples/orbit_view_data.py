@@ -25,7 +25,8 @@ class view:
         # iterator to get the  rates for all trajectories
         counter = 0
         while counter < self.d.n_trajectories:
-            x,y,z,r = self.d.get_trajectory(counter)
+            t_data = self.d.get_trajectory(counter)
+            x,y,z,r =  t_data[:4,:]
             br, bz, bpj, bt, psi_rel = self.d.get_B_fields(counter)
             # if selected use only the part of the trjectory inside the plasma
             if in_plasma:

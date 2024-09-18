@@ -49,6 +49,7 @@ class detector:
                  tracker = None,
                  arm_rotation = 0.,
                  bundle_fname = 'bundle.npz',
+                 output_dir = './',
                  comment = '',
                  color = 'r',
                  zero_at_coll = False,
@@ -105,6 +106,7 @@ class detector:
         if tracker is not None:
             self.set_tracker(tracker)
         self.bundle_fname = bundle_fname
+        self.output_dir = output_dir
         self.color = color    # color for drawing trajectories
         self.bundle_vars = {'x':0, 'y':1, 'z':2, 'r':3, 'phi':4, 'vx':5, 'vy':6, 'vz':7, 'vr':8, 'vphi':9}
         self.Bf_bundle_vars = {'b_pol_r':0, 'b_pol_z':1, 'b_phi':2, 'b_total':3, 'psi_rel':4}
@@ -175,7 +177,7 @@ class detector:
                       'Bf_bundle_variables':self.Bf_bundle_vars,
                       'comment':self.comment }
         if save:
-            np.savez_compressed('central_'+self.bundle_fname,
+            np.savez_compressed(self.output_dir + 'central_'+self.bundle_fname,
                                 trajectories = self.central_track,
                                 B_fields  = self.central_bfields,
                                 information = general_info)
@@ -257,7 +259,7 @@ class detector:
                       'Bf_bundle_variables':self.Bf_bundle_vars,
                       'comment':self.comment }
         if save:
-            np.savez_compressed(self.bundle_fname,
+            np.savez_compressed(self.output_dir + self.bundle_fname,
                                 trajectories = self.bundle,
                                 B_fields  = self.Bf_bundle,
                                 acceptance = self.acc,

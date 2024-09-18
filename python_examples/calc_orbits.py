@@ -46,6 +46,24 @@ color_table = COL.CSS4_COLORS
 color_names = list(color_table.keys())
 
 
+#-------------------------------------------------------------
+# make directory if needed
+def check_dir(out_dir):
+    # create output directory (if necessary)
+    if os.path.isdir(out_dir):
+        print(70*'=')
+        print(f'-----> {out_dir}  exists, will use it ')
+        print(70*'=')
+    else:
+        try:
+            print(70*'=')
+            print(f'----> Try to create : {out_dir}')
+            os.makedirs(out_dir, exist_ok=True) 
+            print(70*'=')
+        except Exception as msg:
+            print("problem : ", msg)
+            sys.exit()
+
 
 #%% location of the python modules for orbit_mod90: set this to the correct directory
 
@@ -148,6 +166,10 @@ cd = pfile(args.control_file)
 # this is a data file describing the detector head
 dh = B.get_file(cd['detector_head'])
 
+# output directory for the trajectory bundkes
+
+orbit_dir = cd['orbit_dir']
+check_dir(orbit_dir)
 
 #%%  set initial values for tracker
 #
@@ -225,6 +247,7 @@ for i,n  in enumerate(dh['Detector_number']):
                         arm_rotation = arm_rotation,
                         tracker = Tr,
                         bundle_fname = f'det_{n}_'+dh['Detector_name'][i]+'.npz',
+                        output_dir = orbit_dir,
                         color = dh['color'][i],
                         R_det = R_det_loc, R_coll = R_coll_loc, R_cyl = R_cyl_loc, D = D_loc,
                         zero_at_coll = zero_at_collimator,

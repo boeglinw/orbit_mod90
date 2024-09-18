@@ -3,6 +3,8 @@
 # orbit_mod90 and calc_orbits.py (and derivatives)
 #
 import numpy as np
+import os
+import sys
 
 import scipy.interpolate as SI
 
@@ -12,7 +14,29 @@ from LT import parameterfile as PF
 
 import argparse as AG
 
+
+#-------------------------------------------------------------
+# make directory if needed
+def check_dir(out_dir):
+    # create output directory (if necessary)
+    if os.path.isdir(out_dir):
+        print(70*'=')
+        print(f'-----> {out_dir}  exists, will use it ')
+        print(70*'=')
+    else:
+        try:
+            print(70*'=')
+            print(f'----> Try to create : {out_dir}')
+            os.makedirs(out_dir, exist_ok=True) 
+            print(70*'=')
+        except Exception as msg:
+            print("problem : ", msg)
+            sys.exit()
+#-------------------------------------------------------------
+
+#-------------------------------------------------------------
 # information class for TRANSP data
+#-------------------------------------------------------------
 class TRANSP_data:
     def __init__(self):
         self.dir = './TRANSP/'
@@ -79,10 +103,13 @@ c_file = args.control_file
 cd = PF.pfile(c_file)
 
 # read control file:
+    
 
-# output
+# output setup
 result_dir = cd['results_dir']
 result_file = cd['results_file']
+
+check_dir (result_dir)
 
 
 # TRANSP result directory

@@ -52,6 +52,24 @@ color_names = list(color_table.keys())
 m2cm = 100.
 MeV2KeV = 1e3
 
+#-------------------------------------------------------------
+# make directory if needed
+def check_dir(out_dir):
+    # create output directory (if necessary)
+    if os.path.isdir(out_dir):
+        print(70*'=')
+        print(f'-----> {out_dir}  exists, will use it ')
+        print(70*'=')
+    else:
+        try:
+            print(70*'=')
+            print(f'----> Try to create : {out_dir}')
+            os.makedirs(out_dir, exist_ok=True) 
+            print(70*'=')
+        except Exception as msg:
+            print("problem : ", msg)
+            sys.exit()
+
 
 # default value
 reverse_velocities = False
@@ -213,6 +231,11 @@ cd = pfile(args.control_file)
 dh = B.get_file(cd['detector_head'])
 
 
+# output directoru for the trajectory bundkes
+
+orbit_dir = cd['orbit_dir']
+check_dir(orbit_dir)
+
 # FIDASIM data file (pickle file)
 
 fidasim_file = cd['fidasim_file']
@@ -315,6 +338,7 @@ for i,n  in enumerate(dh['Detector_number']):
                         arm_rotation = arm_rotation,
                         tracker = Tr,
                         bundle_fname = f'det_{n}_'+dh['Detector_name'][i]+'.npz',
+                        output_dir = orbit_dir,
                         color = dh['color'][i],
                         R_det = R_det_loc, R_coll = R_coll_loc, R_cyl = R_cyl_loc, D = D_loc,
                         zero_at_coll = zero_at_collimator,
