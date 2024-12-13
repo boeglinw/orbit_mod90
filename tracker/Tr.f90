@@ -98,7 +98,10 @@ contains
     ! set q/m for tracker
     q_over_m = particle_charge/particle_mass
 
-    ! set Omega (basically q/p) used for scaling the EOM
+    ! set Omega used for scaling the EOM basically 
+    ! 1/(r B) where r is the larmor radius and B the magntic field perp. to v
+    ! all quantities are in SI units
+    
     omega = particle_charge/sqrt(2.*particle_energy*particle_mass)
 
     ! allocate trajectory array

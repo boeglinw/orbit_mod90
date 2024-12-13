@@ -33,7 +33,7 @@ class fibonacci_grid:
         self.calc_square()
     
     def set_npoints(self, N):
-        self.N = N  # nu,mber of points
+        self.N = N  # number of points
         self.calc_square()
         
     def calc_square(self):
@@ -54,7 +54,7 @@ class fibonacci_grid:
         if N is not None:
             self.set_npoints(N)
         # map grid onto a cicle
-        self.theta_c = 2.*np.pi*self.ux
+        self.theta_c = 2.*np.pi*self.ux 
         self.r_c = np.sqrt(self.uy)
         return self.r_c*R, self.theta_c
 

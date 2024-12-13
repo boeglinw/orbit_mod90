@@ -276,7 +276,12 @@ Tr.tracker.set_efit_directory(cd.get_value('efit_directory'))
 
 
 #%% Control trajectory bundle calculation
-trajectory_bundle_type = 'round'  # this is the only bundle type for FIDASIM at this point
+trajectory_bundle_type = cd.get_value('bundle_type')  # round and alving are the only bundle types for FIDASIM at this point
+
+if trajectory_bundle_type not in ['round', 'alvin']:
+    print(f'-------> bundle_type {trajectory_bundle_type} not allowed here !')
+    sys.exit(-1)
+    
 # number of fibonacci positions in detector area
 N_pos_det = cd.get_value('number_of_detector_points')
 # number of fibonacci points for direction
@@ -294,6 +299,11 @@ reverse_velocities = cd.get_value('reverse_velocities')
 
 # save inside part only
 save_inside_only = cd.get_value('save_inside_only')
+
+# renormalize acceptance
+renormalize_acc = cd.get_value('renormalize_acceptance')
+
+print(f'====> renormalize = {renormalize_acc}')
 
 #%% initialize tracker: allocate space for trajectory data in BT.tracker.trajectory
 #
@@ -348,14 +358,16 @@ for i,n  in enumerate(dh['Detector_number']):
 
 # calculate trajectories
 
-for det_l in detector_head:
+for i_det, det_l in enumerate(detector_head):
     det_l.all_central = []
+    det_l.all_ratios = []
     det_l.all_bundles = []
     det_l.all_Bf_bundles = []
     det_l.all_hdf_info = []
     det_l.all_acc = []
     det_l.get_fidasim_geometry()
-    for E_p in e_particle:
+    for i_E, E_p in enumerate(e_particle):
+        print(f'----------- Working on Detector {i_det}, Energy step {i_E} ----------------')
         Tr.tracker.particle_energy_mev = E_p  # set new particle energy in MeV
         Tr.tracker.init_tracker()             # init tracker wirh new energy          
         det_l.init_trajectories(N_pos = N_pos_det, N_dir = N_dir_det)   # init trajectory calculation
@@ -366,6 +378,7 @@ for det_l in detector_head:
         # store results
         det_l.all_hdf_info.append([det_l.hdf_nsteps, det_l.hdf_n_steps_actual,det_l.hdf_n_rays])
         det_l.all_central.append(C.copy(det_l.central_track))  # store central tracks
+        det_l.all_ratios.append(det_l.bd.ratio)                # store passing fractions
         det_l.all_bundles.append(C.copy(det_l.bundle))         # store trajectory bundles (rays, sightlines)
         det_l.all_Bf_bundles.append(C.copy(det_l.Bf_bundle))   # store corresponding B-fields 
         det_l.all_acc.append(C.copy(det_l.acc))
@@ -386,7 +399,13 @@ nactual_a = np.moveaxis(na, 0, 2)
 
 #%% array of acceptances
 # array of actual step numbers
-daomega = np.array([[acc for acc in det_l.all_acc] for det_l in detector_head])*m2cm**2
+
+if renormalize_acc:
+    scale_f = 1./(4.*np.pi)
+else:
+    scale_f = 1.
+
+daomega = np.array([[acc for acc in det_l.all_acc] for det_l in detector_head])*m2cm**2 * scale_f
 
 # arrange the axis so that the sequence of indices is as is read in FIDASIM
 daomega_a = np.moveaxis(daomega, 0, -1)
@@ -469,7 +488,7 @@ FD['sightline'] = sightline_a
 FD['sightline_Bf'] = dsb_data
 
 # save dictionary
-save_dict(fidasim_file, FD)
+save_dict(orbit_dir + fidasim_file, FD)
 
 #%% prepare to plot the plasma
 # get the boundary data
@@ -502,13 +521,20 @@ rrg,zzg = np.meshgrid(rg, zg)
 
 
 #%% Plotting
-def plot_plasma3D(central = False, plot_all = False):
+def plot_plasma3D(central = False, detector = 'all'):
     # close all figures using close('all')
     # make 3d plot
     fig3d = B.pl.figure()
     ax = fig3d.add_subplot(111, projection='3d')
     ax.plot_surface(XX, YY, ZZ, color = 'r', alpha = 0.2)
-    # plot all  in det_l
+
+    if detector == 'all':
+        plot_all = True
+    else:
+        plot_all = False
+        dd = detector
+        i_det = detector_head.index(dd)
+
     # plot all  in detector_head:
     if plot_all:
         for dd in detector_head:
@@ -519,25 +545,28 @@ def plot_plasma3D(central = False, plot_all = False):
                     z = ddd[:,2]
                     B.pl.plot(x,y,z, color = color_table[dd.color])
             else:
-                for ddd in dd.all_bundles:
+                for i_e, ddd in enumerate(dd.all_bundles):
+                    frac = dd.all_ratios[i_e]
                     for i,b in enumerate(ddd):
                         x = b.T[0]
                         y = b.T[1]
                         z = b.T[2]
-                        B.pl.plot(x,y,z, color = color_table[dd.color])
+                        B.pl.plot(x,y,z, color = color_table[dd.color], alpha = frac[i])
     else:
-        for dd in detector_head:
-            if central:
-                x = dd.central_track.T[0]
-                y = dd.central_track.T[1]
-                z = dd.central_track.T[2]
+        if central:
+            for i_e, ddd in enumerate(dd.all_bundles):
+                x = ddd[:,0]
+                y = ddd[:,1]
+                z = ddd[:,2]
                 B.pl.plot(x,y,z, color = color_table[dd.color])
-            else:
-                for b in dd.bundle:
+        else:
+            for i_e, ddd in enumerate(dd.all_bundles):
+                frac = dd.all_ratios[i_e]
+                for i,b in enumerate(ddd):
                     x = b.T[0]
                     y = b.T[1]
                     z = b.T[2]
-                    B.pl.plot(x,y,z, color = color_table[dd.color])
+                    B.pl.plot(x,y,z, color = color_table[dd.color], alpha = frac[i])
 
     
     ax.set_xlabel('X')
@@ -546,9 +575,16 @@ def plot_plasma3D(central = False, plot_all = False):
 
 
 #%% RZ plot
-def plot_plasma_rz(central = False, plot_all = False):
+def plot_plasma_rz(central = False, detector = 'all'):
     fig_rz = B.pl.figure()
     limiter.draw_side_all()
+    
+    if detector == 'all':
+        plot_all = True
+    else:
+        plot_all = False
+        dd = detector
+        i_det = detector_head.index(dd)
     
     # draw the flux
     B.pl.contour(rrg,zzg, psi, levels = 40)
@@ -560,39 +596,50 @@ def plot_plasma_rz(central = False, plot_all = False):
     if plot_all:
         for dd in detector_head:
             if central:
-                for ddd in dd.all_central:
+                for i_e,ddd in enumerate(dd.all_central): 
                     r = ddd[:,3]
                     z = ddd[:,2]
                     B.pl.plot(r,z, color = color_table[dd.color])
             else:
-                for ddd in dd.all_bundles:
+                for i_e,ddd in enumerate(dd.all_bundles):
+                    frac = dd.all_ratios[i_e]
                     for i,b in enumerate(ddd):
                         r = b.T[3]
                         z = b.T[2]
-                        B.pl.plot(r,z, color = color_table[dd.color])
+                        B.pl.plot(r,z, color = color_table[dd.color], alpha = frac[i])
     else:
-        for dd in detector_head:
-            if central:
-                r = dd.central_track.T[3]
-                z = dd.central_track.T[2]
+        if central:
+            for i_e,ddd in enumerate(dd.all_central): 
+                r = ddd[:,3]
+                z = ddd[:,2]
                 B.pl.plot(r,z, color = color_table[dd.color])
-            else:            
-                for i,b in enumerate(dd.bundle):
+        else:            
+            for i_e,ddd in enumerate(dd.all_bundles):
+                frac = dd.all_ratios[i_e]
+                for i,b in enumerate(ddd):
                     r = b.T[3]
                     z = b.T[2]
-                    B.pl.plot(r,z, color = color_table[dd.color])
+                    B.pl.plot(r,z, color = color_table[dd.color], alpha = frac[i])
     B.pl.ylim((-2.,2.))
     B.pl.xlim((0.,2.))
 
 
 
 #%% midplane plot
-def plot_plasma_mid(central = False, plot_all = False):
+def plot_plasma_mid(central = False, detector = 'all'):
     fig_mid = B.pl.figure()
     limiter.draw_top_all()
-    
+ 
+        
     # draw the plasma
     plot_ring(r_plasma_min, r_plasma_max, B.pl.gca(), color = 'r', alpha = 0.2, edgecolor = None)
+
+    if detector == 'all':
+        plot_all = True
+    else:
+        plot_all = False
+        dd = detector
+        i_det = detector_head.index(dd)
     
     # plot all  in detector_head:
     if plot_all:
@@ -603,22 +650,25 @@ def plot_plasma_mid(central = False, plot_all = False):
                     y = ddd[:,1]
                     B.pl.plot(x,y, color = color_table[dd.color])
             else:
-                for ddd in dd.all_bundles:
+                for i_e,ddd in enumerate(dd.all_bundles):
+                    frac = dd.all_ratios[i_e]
                     for i,b in enumerate(ddd):
                         x = b.T[0]
                         y = b.T[1]
-                        B.pl.plot(x,y, color = color_table[dd.color])
+                        B.pl.plot(x,y, color = color_table[dd.color], alpha = frac[i])
     else:
-        for dd in detector_head:
-            if central:
-                x = dd.central_track.T[0]
-                y = dd.central_track.T[1]
+        if central:
+            for i_e,ddd in enumerate(dd.all_central): 
+                x = ddd[:,0]
+                y = ddd[:,1]
                 B.pl.plot(x,y, color = color_table[dd.color])
-            else:            
-                for i,b in enumerate(dd.bundle):
+        else:
+            for i_e,ddd in enumerate(dd.all_bundles):
+                frac = dd.all_ratios[i_e]
+                for i,b in enumerate(ddd):
                     x = b.T[0]
                     y = b.T[1]
-                    B.pl.plot(x,y, color = color_table[dd.color])    
+                    B.pl.plot(x,y, color = color_table[dd.color], alpha = frac[i])    
 
     B.pl.ylim((-2.,2.))
     B.pl.xlim((-2.,2.))

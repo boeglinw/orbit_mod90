@@ -118,13 +118,23 @@ class detector:
         self.v0 = Tr_l.tracker.vmag
         # set particle mass in electron masses
         self.Tr.tracker.particle_mass_me = Tr_l.tracker.particle_mass/Tr_l.constants_and_masses_mod.me
+        
         # magnetic field at detector location
         if self.ignore_detector_field:
             # ignore field
             self.B_det = np.array([0.,0.,0.])
         else:
             # calculate field and use it
-            self.B_det = self.Tr.em_fields_mod.bfield3(self.det_pos.pos)
+            self.B_det = self.Tr.em_fields_mod.bfield3(self.det_pos_std)
+        # calculate larmor radius at detector location
+        B_mag = np.linalg.norm(self.B_det)
+        # Omega = q/sqrt(2 E m) = 1/(R_l B) scaling factor used in diff.equation
+        Omega = self.Tr.constants_and_masses_mod.omega
+        if B_mag == 0.:
+            self.R_l_det = 1e9  # of the field is - set R_l to some very large number
+        else:
+            self.R_l_det =  1./(B_mag*Omega)
+            
 
     def init_trajectories(self, N_pos = 10, N_dir = 50, N_s = 50, dN_s = 2):
         # calculate trajectory initial positions and velocities
@@ -135,8 +145,9 @@ class detector:
                          v = self.v0,                    # particle velocity
                          m_me = self.Tr.tracker.particle_mass_me,
                          q_ec = self.Tr.tracker.particle_charge_ec,
+                         Bf = self.B_det,
                          R_det = self.R_det, R_coll = self.R_coll, R_cyl = self.R_cyl, D = self.D, # detector geometry
-                         Bf = self.B_det,                           #  mag. field at detector location
+                         R_l = self.R_l_det,            # Larmor radius for current energy
                          scale = self.fib_scale,
                          z_zero = self.zero_coll)
         # intialize

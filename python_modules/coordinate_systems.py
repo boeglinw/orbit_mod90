@@ -39,7 +39,7 @@ coordinate systems:
         Cartesian coordinates:
            
            z-axis : perp. to mid plane
-           x-axis : in mid plane, pointing from center stack to detector detector or detector array position towards
+           x-axis : in mid plane, pointing from center stack to detector or detector array position 
            y-axis : in mid plane forming a RH coord system
            
         Polar coordinate system:

@@ -29,7 +29,7 @@ import numpy as np
 
 class trajectory_bundle:
 
-    def __init__(self, fname):
+    def __init__(self, fname, central = False):
         """
         Load trajectory bundle
 
@@ -43,8 +43,10 @@ class trajectory_bundle:
         trajectory bundle object.
 
         """
+        self.central = central 
         self.filename = fname
         self.load_data()
+        
 
     def load_data(self):
         """
@@ -56,11 +58,18 @@ class trajectory_bundle:
 
         """
         d = np.load(self.filename, allow_pickle = True)
+        self.d = d
         self.keys = list(d.keys())
-        self.bundle = d['trajectories']
+        if self.central:
+            self.bundle = [d['trajectories']]
+        else:
+            self.bundle = d['trajectories']
         self.n_trajectories = len(self.bundle)
         self.Bf = d['B_fields']
-        self.acceptance = d['acceptance']
+        if self.central:
+            self.acceptance = 0.
+        else:
+            self.acceptance = d['acceptance']
         self.information = d['information'].item()
 
     def trajectories(self):
@@ -124,7 +133,7 @@ class trajectory_bundle:
             return None
         
         if component is None:
-            return np.array(list((self.bundle[i]).T))
+            return np.array(list((self.bundle[i]).T), dtype = object)
         elif component in self.information['bundle_variables'].keys():
             cc = self.information['bundle_variables'][component]
             return (np.array(list((self.bundle[i]).T)))[cc,:]

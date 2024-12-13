@@ -81,6 +81,7 @@ class bundle:
                  R_det = .001, R_coll = .001, D = .05, R_cyl = 0.001,
                  Ef = np.array([0., 0., 0.]),
                  scale = 1.,
+                 R_l = 1.,
                  z_zero = False):
         """
 
@@ -130,6 +131,9 @@ class bundle:
 
         scale: float, optional
             scale factor to increase maximal polar direction angle. The default is 1.
+            
+        R_l : float
+            Larmor radius of detected particle at detector location
 
         z_zero: bool, optional
             set z-coordinate of final position to 0. This is useful if detector positions are referring to collimator position. The default is False
@@ -151,6 +155,7 @@ class bundle:
         self.R_coll = R_coll
         self.R_cyl = R_cyl
         self.D = D
+        self.R_l = R_l
         self.scale = scale
         # additional number of boris steps to make sure the entire length of the detector
         # has been traversed
@@ -169,8 +174,8 @@ class bundle:
         None.
 
         """
-        # setup mag. field tracing
-        BC.boris_cylinder.set_b0(self.B)
+        # setup mag. field back tracing (from coll. to detector)
+        BC.boris_cylinder.set_b0(-self.B)
         self.step = self.D/self.N_s
         # initialize calc
 
@@ -191,12 +196,15 @@ class bundle:
         
     def calc_bundle(self, stop = True, bundle_type = 'full'):
         # calculate selected bundle type
+        self.bundle_type = bundle_type
         if bundle_type == 'full':
             self.calc_full_bundle(stop = stop)
         elif bundle_type == 'square':
             self.calc_square_bundle()
         elif bundle_type == 'round':
             self.calc_round_bundle()
+        elif bundle_type == 'alvin':
+            self.calc_alvin_bundle()        
         else:
             print(f'Unknown bundle type : {bundle_type}, nothing calculated !')
         return
@@ -237,6 +245,9 @@ class bundle:
         wall_hits = []
         coll_hits = []
         # calculate trajectories
+        
+        # reverse field for backtracking (from coll. to detector)
+        BC.boris_cylinder.set_b0(-self.B)        
         #  stop when wall is hit
         BC.boris_cylinder.stop_at_hits = stop
         Bm = np.sqrt(np.sum(BC.boris_cylinder.b0**2))
@@ -273,21 +284,21 @@ class bundle:
                 sel = tr[:,2]<= self.D
                 t_init = tr[sel][0]
                 t_final = tr[sel][-1]
-                if self.save_track:
-                    results.append(tr)  # save position and  velocities
-                t_det.append(t_init)
-                t_coll.append(t_final)
                 # check for a wall hit
                 wall_hits.append(CO.copy(BC.boris_cylinder.hit))
                 # check for collimator hit
                 r_xy_coll = np.sqrt(t_final[0]**2 + t_final[1]**2)
+                #--------------------------- save results --------------
+                if self.save_track:
+                    results.append(tr)  # save position and  velocities
+                t_det.append(t_init)
+                t_coll.append(t_final)
                 coll_hits.append(r_xy_coll >= self.R_coll )
                 
 
         print(f'time = {timeit.default_timer() - start_time}')
 
         # make arrays
-
         if self.save_track:
             self.results = np.array(results, dtype = object)            
         self.t_det = np.array(t_det)
@@ -342,7 +353,7 @@ class bundle:
         # using initial values
         self.Acci = np.sum(self.dAcci)
 
-    def calc_round_transmission(self, theta, phi, return_details = False):
+    def calc_round_transmission(self, theta, phi, return_details = False, ):
         """
         calculate transmission factor for a selected direction for a general detector including 
         magnetic field at detector location. Select a position at the collimator and back-track it
@@ -367,12 +378,14 @@ class bundle:
         #
         start_time = timeit.default_timer()
         
-        # reverse field for back tracking
+        # reverse field for back tracking (from coll. to detector)
         BC.boris_cylinder.set_b0(-self.B)
         # do not stop if trajectory hits a wall as it is only needed for the 
         BC.boris_cylinder.stop_at_hits = False  
         Nstep_l = self.N_s + self.dN_s
         # loop over initial velocities
+        Bm = np.sqrt(np.sum(BC.boris_cylinder.b0**2))
+        print(f'MTB: B-field at detector = {BC.boris_cylinder.b0} abs =  {Bm}')
         for k,th in enumerate(theta):
             ph = phi[k]
             results = []
@@ -427,7 +440,90 @@ class bundle:
             return np.array(t_ratio), np.array(r_coll)  # ratio and array of collimator positions
         
         
+    def calc_round_transmission_cart(self, v_init, return_details = False, ):
+        """
+        calculate transmission factor for a given array of initial velocities. 
+        Select a position at the collimator and back-track it
+        to the detector to see if it hit the detector
+
+        Returns
+        -------
+        None.
+
+        """
+        # initialize result arrays
+        t_results = []
+        t_r_det = []
+        t_ok = []
+        t_ratio = []
+        # create collimator position array
+        r_coll_init, th_pos = fg.get_circle(self.R_coll, N = self.N_pos) 
+        xc = r_coll_init*np.cos(th_pos)
+        yc = r_coll_init*np.sin(th_pos)
+        # displacement vector at collimator
+        delta_r_coll = np.array([xc, yc, np.zeros_like(xc)]).T
+        #
+        start_time = timeit.default_timer()
         
+        # reverse field for back tracking (from coll. to detector)
+        BC.boris_cylinder.set_b0(-self.B)
+        # do not stop if trajectory hits a wall as it is only needed for the 
+        BC.boris_cylinder.stop_at_hits = False  
+        Bm = np.sqrt(np.sum(BC.boris_cylinder.b0**2))
+        print(f'MTB: B-field at detector = {BC.boris_cylinder.b0} abs =  {Bm}')
+        Nstep_l = self.N_s + self.dN_s
+        # loop over initial velocities
+        for vs in v_init:
+            results = []
+            r_det = []
+            r_coll = []
+            hits = []
+            # calculate trajectory for each position and a given direction
+            # inital velocity direction
+            cth = vs[-1]/np.linalg.norm(vs)
+            step_l = self.step/cth                       
+            # calculate central trajectory  
+            # init boris_cylinder for this velocity
+            BC.boris_cylinder.init(self.q_ec, self.m_me, self.R_cyl, self.R_det, self.D, step_l, Nstep_l, vs )
+            # calc. reverse orbit
+            nc0 = BC.boris_cylinder.track_cylinder(np.array([0.,0.,self.D]))
+            # store central orbit
+            tr0 = CO.copy(BC.boris_cylinder.track[:,:])
+            r0 = tr0[:,0:3]  # central trajectory (use positions only)
+            # parallel displace central trajectory     
+            # loop over all initial collimator positions
+            for rs in delta_r_coll:
+                # move central trajectory to rs
+                rr = rs + r0
+                xr = rr[:,0]; yr = rr[:,1];zr = rr[:,2]
+                # get initial and final values
+                Rr = np.sqrt(xr**2 + yr**2)  # transverse position
+                sel = zr >= 0.
+                # determine if the cylinder wall was hit or the detector was missed
+                hit_w = (Rr[sel] >= self.R_cyl).max()
+                miss_det = (Rr[sel] >= self.R_det).max()
+                hit = hit_w or miss_det  # record the result
+                r_init = rr[sel][0]
+                r_final = rr[sel][-1]
+                r_det.append(r_final)
+                r_coll.append(r_init)
+                hits.append(hit)        # save if it hit somewhere
+            hits = np.array(hits)
+            ok = ~hits            
+            # calculate transmission factor
+            ratio = np.count_nonzero(ok)/hits.shape[0]
+            t_ratio.append(ratio)
+        
+            if return_details:
+                 t_r_det.append(np.array(r_det)) # array of track positions in detector
+                 t_ok.append(np.array(ok))  # array of which track position lead to a hit   
+        if return_details:
+            return np.array(t_ratio), np.array(r_coll), np.array(t_r_det),  np.array(t_ok)
+        else:
+            return np.array(t_ratio), np.array(r_coll)  # ratio and array of collimator positions
+        
+        
+                
         
         
 
@@ -456,16 +552,24 @@ class bundle:
         """
         s_det = np.sqrt(np.pi*self.R_det**2)/2.
         s_col = np.sqrt(np.pi*self.R_coll**2)/2.
+        self.s_coldet = s_det
+        self.s_col = s_col
         # make detector grid
         # N_pos = numner of detecor grid points
         # N_dir = number of collimator grid points
-        dx_d = s_det/self.N_pos
-        dx_c = s_col/self.N_dir
+        dx_d = 2*s_det/self.N_pos
+        dx_c = 2*s_col/self.N_dir
         # 1d grid positions 
         x_d = (np.arange(self.N_pos) + 0.5)*dx_d - s_det
         y_d = x_d
         x_c = (np.arange(self.N_dir) + 0.5)*dx_c - s_col
         y_c = x_c
+        self.dx_d = dx_d  # these are stored for checking
+        self.dx_c = dx_c
+        self.x_d = x_d
+        self.y_d = y_d
+        self.x_c = x_c
+        self.y_c = y_c
         # detector grid positions
         xxd, yyd = np.meshgrid(x_d, y_d)
         # collimator grid positions
@@ -485,6 +589,7 @@ class bundle:
         v_mag = np.apply_along_axis(np.linalg.norm, 0, V)
         # velocity unit vectors
         uv = V/v_mag
+        self.uv = uv.T
         # initial positions
         self.r_coll = (np.array([xc, yc, np.zeros_like(xc)])).T
         # initical velocity
@@ -505,7 +610,7 @@ class bundle:
         
         full_bundle: bool (optional) 
         
-            True : similar to the output of calc_full_bundle, calcultaes a set of initial values for 
+            True : similar to the output of calc_full_bundle, calculates a set of initial values for 
                    trajectory bundles with different positions in the collimator.
                    
             False(default): calculates a set of directions and the associated transmission factors. All initial positions
@@ -533,38 +638,27 @@ class bundle:
         
     
         """
+        
+        
         fg = FI.fibonacci_grid(self.N_dir)
         
-        # largest possible angle
-        th_max = np.arctan((self.R_det + self.R_coll)/self.D)
-        
-        # total solid angle
-        A = 2.*np.pi*(1. - np.cos(th_max))
-        # solid angle per point
-        dA = A/self.N_dir
-        
-        # collimator area element
-        dA_coll = self.A_coll/self.N_pos
-        
-        
-        phi, theta = fg.get_sphere(0., th_max)
+        # get set of directions
+        phi, theta = fg.get_sphere(0., self.th_max)
         self.theta_dir = theta
         self.phi_dir = phi
         # initial directions
         xp = np.cos(phi)*np.sin(theta)
         yp = np.sin(phi)*np.sin(theta)
         zp = np.cos(theta)
-        # velocity unit vectors
+        # velocity vectors
         v_coll = (np.array([xp, yp, zp])*self.v).T
 
         # calculate overlapp for round bundle and check if it is ok incl B-field
-        if full_bundle :
-            ratio, r_coll, r_det, ok_a = self.calc_round_transmission(theta, phi, return_details = True)
-            self.c_ok = ok_a
-        else:
-            ratio, r_coll = self.calc_round_transmission(theta, phi, return_details = False)
+        ratio, r_coll, r_det, ok_a = self.calc_round_transmission(theta, phi, return_details = True)
+        self.c_ok = ok_a
         self.c_ratio = ratio   # for debugging
         self.c_r_coll = r_coll
+        self.c_r_det = r_det
         
         # if a full bundle is needed store the collimator positions (this should be identical to the full bundle)
         if full_bundle:
@@ -578,15 +672,59 @@ class bundle:
                 else:
                     self.v_init_l.append(n_ok * [self.v_coll[0]])
             self.v_coll = np.vstack(self.v_init_l)
-            self.dAcc = np.concatenate( [dA_coll*np.cos(th)*dA*np.ones_like(r_coll[ok_a[i]][:,0]) for i,th in enumerate(theta)])
+            self.dAcc = np.concatenate( [self.dA_coll*np.cos(th)*self.dA_dir*np.ones_like(r_coll[ok_a[i]][:,0]) for i,th in enumerate(theta)])
         else:
             # set the positions at the center of the collimator
             xc = np.zeros_like(xp)
             self.r_coll = (np.array([xc, xc, xc])).T
-            self.dAcc = ratio*self.A_coll*np.cos(theta)*dA
+            self.dAcc = ratio*self.A_coll*np.cos(theta)*self.dA_dir
             self.ratio = ratio
             self.v_coll = v_coll
         # acceptance per trajectory
+        
+        
+    def calc_alvin_bundle(self):
+        
+        # setup collimator size to take care of curved orbits as in Alvin's code
+        delta_R = self.R_l - np.sqrt(self.R_l**2 - self.D**2)
+        
+        R_coll_corr = self.R_coll*self.scale + delta_R 
+        
+        A_coll_corr = np.pi*R_coll_corr**2 
+        
+        c_p = fg.get_circle(R_coll_corr, self.N_dir)
+        
+        # for debugging
+        self.R_coll_corr = R_coll_corr
+        self.A_coll_corr = A_coll_corr
+        self.c_p = c_p
+        
+        # calculate initial velocities (vector pointing from center of detector to extended collimator)
+        xc = c_p[0]*np.cos(c_p[1])
+        yc = c_p[0]*np.sin(c_p[1])
+        zc = np.ones_like(xc)*self.D
+        
+        delta_r = np.array([xc, yc, zc])
+        
+        v_coll_unit = delta_r/np.linalg.norm(delta_r, axis = 0)  # unit vector for initial velocities
+        
+        v_coll = (v_coll_unit*self.v).T  # initial velocities
+        cth = v_coll_unit[2,:]            # cos(theta) needed for acceptance calculation
+        
+        # calculate overlapp for round bundle and check if it is ok incl B-field
+        ratio, r_coll, r_det, ok_a = self.calc_round_transmission_cart(v_coll, return_details = True)
+        self.c_ok = ok_a
+        self.c_ratio = ratio   # for debugging
+        self.c_r_coll = r_coll
+        self.c_r_det = r_det       
+
+        # set the positions at the center of the collimator
+        self.r_coll = np.zeros_like(v_coll)
+        # calculation as in orb_cfpd.pro
+        self.dAcc = ratio*cth*(A_coll_corr/self.N_dir)*(self.A_det)/self.D**2
+        self.ratio = ratio
+        self.v_coll = v_coll
+
 
     def get_bundle(self):
         """

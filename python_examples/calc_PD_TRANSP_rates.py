@@ -156,7 +156,7 @@ rates = np.array(rates)
 o = open(result_dir + result_file, 'w')
 
 o.write('# TRANSP rates\n')
-o.write('#! name[i,0]/ rate[f,1]/ \n')
+o.write('#! name[s,0]/ rate[f,1]/ \n')
 for i,pv in enumerate(PD_views):
     o.write(f'{pv.d.filename} {rates[i]}\n')
 o.close()

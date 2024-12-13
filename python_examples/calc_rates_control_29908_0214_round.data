@@ -1,0 +1,40 @@
+# rate calculation control file
+
+# calculation for square effective collimator
+
+
+# result location
+
+results_dir = ./rates/
+
+results_file = rates_29908_0214_round_alvin.data
+
+
+# trajectory locations 
+orbit_dir = ./results/29908_0214_round_alvin/
+
+
+# location of TRANSP results
+
+TRANSP_dir = ../../MAST_data/TRANSP/29904O04/
+
+# beam-beam
+TRANSP_BB_file = g3_BB_0.2135_1.npz
+
+# beam thermal
+TRANSP_BT_file = g3_BT_0.2135_1.npz
+
+# view files containing trajectory bundles
+
+views = det_4_Channel_0.npz,\
+        det_1_Channel_1.npz,\ 
+        det_2_Channel_2.npz,\
+        det_3_Channel_3.npz
+
+
+
+
+        
+
+
+
