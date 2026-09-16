@@ -4,12 +4,31 @@
 SRC = BorisCylpy.f90
 OBJ = BorisCylpy.o
 
-INCLUDE    = ../include/
+INCLUDE_DIR = $(ORBIT_MOD90_ROOT)/include/
+
+INCLUDE     = $(INCLUDE_DIR)
+
+BORIS      = $(ORBIT_MOD90_ROOT)/boris_pusher/
+
+BUILDDIR   = $(BORIS)/build/
+
 
 F2PY     = f2py
 
-F2PY_F1   = --include-paths $(INCLUDE) --overwrite-signature -m 
-F2PY_F2   = -c --fcompiler=gfortran --f90flags="-ffixed-line-length-none -w -fno-automatic  -I../include/"
+F2PY_F1   = --include-paths $(INCLUDE) --overwrite-signature -m
+
+# using distutils
+# F2PY_F2   = -c --fcompiler=gfortran --f90flags="-ffixed-line-length-none -w -fno-automatic  -I../include/"
+
+# using meson
+
+# with meson nuild system
+FC        = gfortran -I $(INCLUDE_DIR) -I$(BORIS)
+
+
+FFLAGS    = -ffixed-line-length-none -w -fno-automatic -fPIC
+F2PY_F2   = -c 
+
 
 PROGRAM = BorisCylpy
 
@@ -23,7 +42,7 @@ all: $(OBJ)
 	# need to modify one line in the signature file to make sure that the bfield_array works correctly, of the code changes this needs to be adjusted
 	# cat sgn_fluxpy.pyf | sed s/"real(kind=8), allocatable,dimension(:,:) :: b_array"/"real(kind=8), allocatable,dimension(size(r),4) :: b_array"/ > xx
 	# mv xx sgn_$(PROGRAM).pyf
-	$(F2PY) $(F2PY_F2) sgn_$(PROGRAM).pyf $(SRC) $(LIBS)
+	$(F2PY)  --build-dir $(BUILDDIR) $(F2PY_F2) sgn_$(PROGRAM).pyf $(SRC) $(LIBS)
 
 #----------------------------------------------------------
 .PHONY : clean
@@ -31,6 +50,11 @@ all: $(OBJ)
 clean:
 	rm -f *.so *.pyf BorisCylpy.o
 	rm -rf *.dSYM
+
+realclean:
+	rm -f *.so *.pyf BorisCylpy.o
+	rm -rf *.dSYM
+	rm -rf 	$(BUILDDIR)
 
 
 

@@ -69,7 +69,11 @@ class trajectory_bundle:
         if self.central:
             self.acceptance = 0.
         else:
-            self.acceptance = d['acceptance']
+            try:
+                self.acceptance = d['acceptance']
+            except Exception as err:
+                print(f'no acceptance information set to 0: {err}')
+                self.acceptance = 0.
         self.information = d['information'].item()
 
     def trajectories(self):

@@ -1,8 +1,5 @@
 
-
-
-
-subroutine sets2d (s, cs, x, nx, bkx, lx, y, ny, bky, ly, wk, ier)  
+subroutine sets2d (s, cs, x, nx, bkx, lx, y, ny, bky, ly, wk)  
   !**********************************************************************
   !**                                                                  **
   !**                                                                  **
@@ -33,7 +30,7 @@ subroutine sets2d (s, cs, x, nx, bkx, lx, y, ny, bky, ly, wk, ier)
   !
   !      lx, ly -   number of terms in bkx and bky.
   !
-  !      ier   - rror parameter.
+  !      ier   - error parameter. not used
   !
   !  Work arrays:
   !
@@ -52,6 +49,7 @@ subroutine sets2d (s, cs, x, nx, bkx, lx, y, ny, bky, ly, wk, ier)
   !     .          xknot(kubicx + nw), yknot(kubicy + nh),
   !     .          cs(kubicx, lubicx, kubicy, lubicy),
   !     .          bkx(lubicx + 1), bky(lubicy + 1)
+  
   dimension s (1), x (nx), y (ny), wk (nx, ny), cs (kubicx, nx - &
        kubicx + 1, kubicy, ny - kubicy + 1), bkx (nx - kubicx + 2), &
        bky (ny - kubicy + 2), xknot (nxknot), yknot (nyknot)

@@ -4,20 +4,36 @@
 SRC = Trpy.f90
 OBJ = Trpy.o
 
-INCLUDE    = ../include/
-BORIS      = ../boris_pusher/
-FLUX       = ../flux/
-SPLINE     = ../spline/
-RDEQDSK    = ../read_eqdsk/
-MODULES    = ../include/
-LIMITER    = ../limiter/
-BSINTEGRATOR = ../bs_integrator/
-TRACKER = ../tracker/
+INCLUDE_DIR = $(ORBIT_MOD90_ROOT)/include/
+
+INCLUDE    = $(ORBIT_MOD90_ROOT)/include/
+BORIS      = $(ORBIT_MOD90_ROOT)/boris_pusher/
+FLUX       = $(ORBIT_MOD90_ROOT)/flux/
+SPLINE     = $(ORBIT_MOD90_ROOT)/spline/
+RDEQDSK    = $(ORBIT_MOD90_ROOT)/read_eqdsk/
+MODULES    = $(ORBIT_MOD90_ROOT)/include/
+LIMITER    = $(ORBIT_MOD90_ROOT)/limiter/
+BSINTEGRATOR = $(ORBIT_MOD90_ROOT)/bs_integrator/
+TRACKER = $(ORBIT_MOD90_ROOT)/tracker/
+
+BUILDDIR   = $(TRACKER)/build/
 
 F2PY     = f2py
 
-F2PY_F1   = --include-paths $(INCLUDE):$(FLUX):$(LIMITER):$(BORIS):$(BSINTEGRATOR) --overwrite-signature -m 
-F2PY_F2   = -c --fcompiler=gfortran --f90flags="-ffixed-line-length-none -w -fno-automatic -I../include/ -I../flux/ -I../limiter/ -I../boris_pusher/ -I../bs_integrator/ "
+F2PY_F1   = --include-paths $(INCLUDE):$(FLUX):$(LIMITER):$(BORIS):$(BSINTEGRATOR) --overwrite-signature -m
+
+# with distutils
+#F2PY_F2   = -c --fcompiler=gfortran --f90flags="-ffixed-line-length-none -w -fno-automatic -I../include/ -I../flux/ -I../limiter/ -I../boris_pusher/ -I../bs_integrator/ "
+
+# with meson
+
+# with meson nuild system
+FC        = gfortran -I $(INCLUDE_DIR) -I $(TRACKER) -I $(FLUX) -I $(LIMITER) -I $(BSINTEGRATOR) -I$(BORIS)
+
+
+FFLAGS    = -ffixed-line-length-none -w -fno-automatic -fPIC
+F2PY_F2   = -c 
+
 
 PROGRAM = Trpy
 
@@ -31,15 +47,18 @@ all: $(OBJ)
 	# need to modify one line in the signature file to make sure that the bfield_array works correctly, of the code changes this needs to be adjusted
 	# cat sgn_fluxpy.pyf | sed s/"real(kind=8), allocatable,dimension(:,:) :: b_array"/"real(kind=8), allocatable,dimension(size(r),4) :: b_array"/ > xx
 	# mv xx sgn_$(PROGRAM).pyf
-	$(F2PY) $(F2PY_F2) sgn_$(PROGRAM).pyf $(SRC) $(LIBS)
+	$(F2PY) --build-dir $(BUILDDIR) $(F2PY_F2) sgn_$(PROGRAM).pyf $(SRC) $(LIBS)
 
 #----------------------------------------------------------
 .PHONY : clean
 
 clean:
-	rm -f *.so *.pyf fluxpy.o
+	rm -f *.so *.pyf Trpy.o
 	rm -rf *.dSYM
 
-
+realclean:
+	rm -f *.so *.pyf  Trpy.o
+	rm -rf *.dSYM
+	rm -rf 	$(BUILDDIR)
 
 

@@ -75,7 +75,7 @@ subroutine read_eqdsk(fname,imfit,ier)
   open(unit=neqdsk,file=fname,status='old', iostat = ioerr)
   if (ioerr .ne. 0) then
      print *, 'problem opening ', fname, ' status = ', ioerr
-     ier = 1
+     ier = ioerr
      return
   endif
   
@@ -304,9 +304,11 @@ subroutine read_eqdsk(fname,imfit,ier)
   !----------------------------------------------------------------------
   !    setup 2-d zpline for psi 
   !----------------------------------------------------------------------
-  call sets2d(psi,c,rgrid,mw,bkx,lkx,zgrid,mh,bky,lky,wk,ier)
+  call sets2d(psi,c,rgrid,mw,bkx,lkx,zgrid,mh,bky,lky,wk)
   !call set_spline_2d(psi,c,rgrid,mw,bkx,lkx,zgrid,mh,bky,lky,wk,ier)
 
+  ! give message about ier if set
+  
   !----------------------------------------------------------------------
   !   setup zpline for poliodal current function F
   !----------------------------------------------------------------------

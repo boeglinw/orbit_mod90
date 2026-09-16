@@ -4,17 +4,31 @@
 SRC = fluxpy.f90
 OBJ = fluxpy.o
 
-INCLUDE = ../include/
+INCLUDE_DIR = $(ORBIT_MOD90_ROOT)/include/
 
-FLUX       = ../flux/
-SPLINE     = ../spline/
-RDEQDSK    = ../read_eqdsk/
-MODULES    = ../include/
+INCLUDE   = $(INCLUDE_DIR)
 
-F2PY     = f2py
+
+FLUX       = $(ORBIT_MOD90_ROOT)/flux/
+SPLINE     = $(ORBIT_MOD90_ROOT)/spline/
+RDEQDSK    = $(ORBIT_MOD90_ROOT)/read_eqdsk/
+MODULES    = $(ORBIT_MOD90_ROOT)/include/
+
+BUILDDIR   = $(FLUX)/build/
+
+F2PY     = f2py 
 
 F2PY_F1   = --include-path $(INCLUDE) --overwrite-signature -m 
-F2PY_F2   = -c --fcompiler=gfortran --f90flags="-ffixed-line-length-none -w -fno-automatic -fPIC -I../include/"
+
+# with distutils build system
+#F2PY_F2   = -c --fcompiler=gfortran --f90flags="-ffixed-line-length-none -w -fno-automatic -fPIC -I../include/"
+
+# with meson nuild system
+FC        = gfortran -I $(INCLUDE_DIR) -I $(FLUX)
+
+
+FFLAGS    = -ffixed-line-length-none -w -fno-automatic -fPIC
+F2PY_F2   = -c 
 
 PROGRAM = fluxpy
 
@@ -28,7 +42,7 @@ all: $(OBJ)
 	# need to modify one line in the signature file to make sure that the bfield_array works correctly, of the code changes this needs to be adjusted
 	# cat sgn_fluxpy.pyf | sed s/"real(kind=8), allocatable,dimension(:,:) :: b_array"/"real(kind=8), allocatable,dimension(size(r),4) :: b_array"/ > xx
 	# mv xx sgn_$(PROGRAM).pyf
-	$(F2PY) $(F2PY_F2) sgn_$(PROGRAM).pyf $(SRC) $(LIBS)
+	$(F2PY) --build-dir $(BUILDDIR) $(F2PY_F2) sgn_$(PROGRAM).pyf $(SRC) $(LIBS)
 
 #----------------------------------------------------------
 .PHONY : clean
@@ -37,6 +51,10 @@ clean:
 	rm -f *.so *.pyf fluxpy.o
 	rm -rf *.dSYM
 
+realclean:
+	rm -f *.so *.pyf fluxpy.o
+	rm -rf *.dSYM
+	rm -rf 	$(BUILDDIR)
 
 
 
