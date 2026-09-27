@@ -49,7 +49,7 @@ subroutine read_eqdsk(fname,imfit,ier)
   real(kind = 8):: rdim, zdim
   real(kind = 8):: ssibry, ssimag
   
-  real(kind = 8):: darea, drgrid, dxsi, dzgrid
+  real(kind = 8):: darea, drgrid, dxsi, dzgrid, rgridmin
    
   integer(kind = 4):: negcur
   integer(kind = 4):: ioerr
@@ -103,12 +103,12 @@ subroutine read_eqdsk(fname,imfit,ier)
   ! mh: number of vertical. Z-grid points
   
   print *, '----------------------------------------------------------------------'
-  READ(neqdsk, '(5e16.9)') rdim,zdim,rzero,rgrid(1),zmid
+  READ(neqdsk, '(5e16.9)') rdim,zdim,rzero,rgridmin,zmid
 
   print*,'rdim = ',rdim
   print*,'zdim = ',zdim
   print*,'rzero = ',rzero 
-  print*,'rgrid(1) = ',rgrid(1)
+  print*,'rgridmin = ',rgridmin
   print*,'zmid = ',zmid
 
   ! xdim : hor. (R) dimension of computational box (m)
@@ -263,7 +263,8 @@ subroutine read_eqdsk(fname,imfit,ier)
   drgrid=rdim/float(mw-1)
   dzgrid=zdim/float(mh-1)
   do i=1,mw
-     rgrid(i)=rgrid(1)+(i-1)*drgrid
+     rgrid(i)=rgridmin+(i-1)*drgrid
+     ! print*, 'i, rgridmin, rgrid(i), drgrid :', i, rgridmin, rgrid(i), drgrid
   enddo
   do i=1,mh
      zgrid(i)=zmid-zdim/2.+(i-1)*dzgrid
@@ -296,7 +297,18 @@ subroutine read_eqdsk(fname,imfit,ier)
   enddo
   close(unit=neqdsk)
   
-
+  ! print final grid
+  
+  print *, '----------------------------------------------------------------------'
+  print*, 'read_eqdsk final grid values'
+  print *, '----------------------------------------------------------------------'
+  print*, 'mw = ', mw
+  print*, 'mh = ', mh
+  print*,'rgrid(1)= ',rgrid(1)
+  print*,'rgrid(mw)= ',rgrid(mw)
+  print*,'zgrid(1)= ',zgrid(1)
+  print*,'zgrid(mh)= ',zgrid(mh)
+  print *, '----------------------------------------------------------------------'
   !------------------------------------------------------------------------------
   ! end of reading EQDSK file
   !------------------------------------------------------------------------------

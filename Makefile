@@ -82,3 +82,8 @@ clean_tracker:
 clean_python:
 	cd $(PYTHON); rm *.so
 	cd $(PYTHONEX); rm *.so *.npz
+
+clean_modules:
+	cd $(FLUX); make -f flux.mak realclean
+	cd $(TRACKER); make -f Trpy.mak realclean
+	cd $(BORIS); make -f BorisCylpy.mak realclean

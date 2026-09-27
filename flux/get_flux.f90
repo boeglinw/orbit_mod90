@@ -45,6 +45,18 @@ function get_flux(idir, ifname)
 
   get_flux = ire
   
+  
+  print *, '----------------------------------------------------------------------'
+  print*, 'get_flux final grid values'
+  print *, '----------------------------------------------------------------------'
+  print*, 'mw = ', mw
+  print*, 'mh = ', mh
+  print*,'rgrid(1)= ',rgrid(1)
+  print*,'rgrid(mw)= ',rgrid(mw)
+  print*,'zgrid(1)= ',zgrid(1)
+  print*,'zgrid(mh)= ',zgrid(mh)
+  print *, '----------------------------------------------------------------------'
+  
   return
 
 end function get_flux
